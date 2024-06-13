@@ -5,7 +5,7 @@
 **Revive driving scene simulation by simulator-conditioned generative models**
 
 
-<a href=""><img src="https://img.shields.io/badge/Project-Page-orange"></a>
+<a href="https://metadriverse.github.io/simgen/"><img src="https://img.shields.io/badge/Project-Page-orange"></a>
 <a href=""><img src="https://img.shields.io/badge/arXiv-Paper-<color>"></a>
 <a href="README.md"><img alt="SimGen: v1.0" src="https://img.shields.io/badge/SimGen-v1.0-blueviolet"/></a>
 <a href="#license-and-citation"><img alt="License: Apache2.0" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg"/></a>
@@ -80,7 +80,7 @@ The digital twins (on nuScenes dataset) and safety-critical scenarios (on Waymo 
 
 ## License and Citation
 
-All assets and code in this repository are under the [Apache 2.0 license](./LICENSE) unless specified otherwise. The language data is under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). Other datasets (including nuScenes, Waymo, and MetaDrive) inherit their own distribution licenses. Please consider citing our paper and project if they help your research.
+All assets and code in this repository are under the [Apache 2.0 license](./LICENSE) unless specified otherwise. The annotation data is under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). Other datasets (including nuScenes, Waymo, and MetaDrive) inherit their own distribution licenses. Please consider citing our paper and project if they help your research.
 
 <!---
 ```BibTeX
