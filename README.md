@@ -4,6 +4,8 @@
 
 **Revive driving scene simulation by simulator-conditioned generative models**
 
+
+<a href=""><img src="https://img.shields.io/badge/Project-Page-orange"></a>
 <a href=""><img src="https://img.shields.io/badge/arXiv-Paper-<color>"></a>
 <a href="README.md"><img alt="SimGen: v1.0" src="https://img.shields.io/badge/SimGen-v1.0-blueviolet"/></a>
 <a href="#license-and-citation"><img alt="License: Apache2.0" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg"/></a>
@@ -62,14 +64,14 @@
 ![method](./assets/diva_real.png "DIVA dataset")
 
 
-**DIVA_Real.** 
+**DIVA-Real.** 
 It collects driving videos from YouTube, covering a worldwide range of geography, weather, scenes, and traffic elements and preserving the appearance diversity of a wide range of traffic participants. Here we provide a sample of 🔗 [YouTube video list](https://docs.google.com/spreadsheets/d/1lKfd0iARpJl-5K37XSXRwiZIWi1LrTvL/edit?usp=sharing&ouid=102597623866661259117&rtpof=true&sd=true) we used.
 For privacy considerations, we are temporarily keeping the complete data labels private.
 
 ![method](./assets/diva_sim.gif "DIVA_dataset")
 
 
-**DIVA_Sim.** 
+**DIVA-Sim.** 
 The Sim2Real data is induced from the same real-world scenarios, in which we can obtain real-world map topology, layout, and raw sensor data.
 It also includes hazardous driving behaviors through interactions introduced by adversarial traffic generation.
 The digital twins (on nuScenes dataset) and safety-critical scenarios (on Waymo Open dataset) can be obtained through this 🔗[data link](https://drive.google.com/drive/folders/1K7NrujRlfyI6VrH6Kd9kTHCeKnpl4bab?usp=sharing). 
