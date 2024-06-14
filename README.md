@@ -6,7 +6,7 @@
 
 
 <a href="https://metadriverse.github.io/simgen/"><img src="https://img.shields.io/badge/Project-Page-orange"></a>
-<a href=""><img src="https://img.shields.io/badge/arXiv-Paper-<color>"></a>
+<a href="https://arxiv.org/abs/2406.09386"><img src="https://img.shields.io/badge/arXiv-Paper-<color>"></a>
 <a href="README.md"><img alt="SimGen: v1.0" src="https://img.shields.io/badge/SimGen-v1.0-blueviolet"/></a>
 <a href="#license-and-citation"><img alt="License: Apache2.0" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg"/></a>
 
@@ -20,7 +20,7 @@
 > 
 > - Presented by [MetaDriverse](https://metadriverse.github.io/), [GenForce](https://genforce.github.io/), and Shanghai Jiao Tong University
 > - :mailbox_with_mail: Primary contact: [Yunsong Zhou]((https://zhouyunsong-sjtu.github.io/)) ( zhouyunsong2017@gmail.com ) 
-> - [arXiv paper]() | [Blog TODO]() | [Slides TODO]()
+> - [arXiv paper](https://arxiv.org/abs/2406.09386) | [Blog TODO]() | [Slides TODO]()
 
 
 
@@ -39,7 +39,7 @@
 ## News <a name="news"></a>
 
 
-- `[2024/06]` SimGem [paper]() released.
+- `[2024/06]` SimGem [paper](https://arxiv.org/abs/2406.09386) released.
 - `[2024/06]` DIVA dataset subset released.
 
 
@@ -82,16 +82,14 @@ The digital twins (on nuScenes dataset) and safety-critical scenarios (on Waymo 
 
 All assets and code in this repository are under the [Apache 2.0 license](./LICENSE) unless specified otherwise. The annotation data is under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). Other datasets (including nuScenes, Waymo, and MetaDrive) inherit their own distribution licenses. Please consider citing our paper and project if they help your research.
 
-<!---
 ```BibTeX
-@article{zhou2024embodied,
-  title={Embodied Understanding of Driving Scenarios},
-  author={Zhou, Yunsong and Huang, Linyan and Bu, Qingwen and Zeng, Jia and Li, Tianyu and Qiu, Hang and Zhu, Hongzi and Guo, Minyi and Qiao, Yu and Li, Hongyang},
-  journal={arXiv preprint arXiv:2403.04593},
+@article{zhou2024simgen,
+  title={SimGen: Simulator-conditioned Driving Scene Generation},
+  author={Zhou, Yunsong and Simon, Michael and Peng, Zhenghao and Mo, Sicheng and Zhu, Hongzi and Guo, Minyi and Zhou, Bolei},
+  journal={arXiv preprint arXiv:2406.09386},
   year={2024}
 }
 ```
---->
 
 ## Related Resources <a name="resources"></a>
 
