@@ -20,7 +20,7 @@
 > 
 > - Presented by [MetaDriverse](https://metadriverse.github.io/), [GenForce](https://genforce.github.io/), and Shanghai Jiao Tong University
 > - :mailbox_with_mail: Primary contact: [Yunsong Zhou]((https://zhouyunsong-sjtu.github.io/)) ( zhouyunsong2017@gmail.com ) 
-> - [arXiv paper](https://arxiv.org/abs/2406.09386) | [Blog TODO]() | [Slides TODO]()
+> - [arXiv paper](https://arxiv.org/abs/2406.09386) | [Blog TODO]() | [Slides](https://docs.google.com/presentation/d/1X1nB9umPlWtNfuUjZObO6UNyyBUbgHogVJA4bCaMiKQ/edit?usp=sharing)
 
 
 
