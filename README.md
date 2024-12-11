@@ -55,9 +55,42 @@
 ## TODO List <a name="todo"></a>
 
 - [x] Release DIVA dataset
-- [ ] Release SimGen code
+- [x] Release SimGen code
 - [ ] Toolkits for novel scene generation
 
+## Quick Start
+### Installation
+You could install simgen package to enable simulator-conditioned generation.
+```bash
+# You don't have to create new environment, the only requirement is python>=3.10.
+conda create -n simgen python=3.10
+conda activate simgen
+
+# Install this package
+cd ~/SimGen_Private
+pip install -e .
+
+# Test torch (expect True)
+python -c "import torch; print(torch.cuda.is_available())"
+
+# Install MetaDrive
+cd ~/
+git clone https://github.com/metadriverse/metadrive.git
+cd ~/metadrive
+pip install -e .
+```
+### Test SimGen
+After installation, you could run the following script to test simgen pipeline. Model checkpoint will automatically be
+downloaded from **huggingface**:[SichengMo-UCLA/SimGen](https://huggingface.co/SichengMo-UCLA/SimGen).
+```bash
+python test/test.py
+```
+
+### Run SimGen with Metadrive
+You cloud also use simgen with metadrive.
+```bash
+python metadrive_simgen.py
+```
 
 ## DIVA Dataset <a name="dataset"></a>
 
