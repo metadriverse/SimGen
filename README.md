@@ -67,7 +67,7 @@ conda create -n simgen python=3.10
 conda activate simgen
 
 # Install this package
-cd ~/SimGen_Private
+cd ~/SimGen
 pip install -e .
 
 # Test torch (expect True)
