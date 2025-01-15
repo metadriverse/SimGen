@@ -6,7 +6,7 @@ import numpy as np
 from einops import rearrange
 from typing import Optional, Any
 
-from SimGen_Private.ldm.modules.attention import MemoryEfficientCrossAttention
+from simgen.ldm.modules.attention import MemoryEfficientCrossAttention
 
 try:
     import xformers

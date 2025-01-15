@@ -6,7 +6,7 @@ import torch as th
 import torch.nn as nn
 import torch.nn.functional as F
 
-from SimGen_Private.ldm.modules.diffusionmodules.util import (
+from simgen.ldm.modules.diffusionmodules.util import (
     checkpoint,
     conv_nd,
     linear,
@@ -15,8 +15,8 @@ from SimGen_Private.ldm.modules.diffusionmodules.util import (
     normalization,
     timestep_embedding,
 )
-from SimGen_Private.ldm.modules.attention import SpatialTransformer
-from SimGen_Private.ldm.util import exists
+from simgen.ldm.modules.attention import SpatialTransformer
+from simgen.ldm.util import exists
 
 
 # dummy replace

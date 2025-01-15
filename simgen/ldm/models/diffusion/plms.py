@@ -4,8 +4,8 @@ import torch
 import numpy as np
 from tqdm import tqdm
 
-from SimGen_Private.ldm.modules.diffusionmodules.util import make_ddim_sampling_parameters, make_ddim_timesteps, noise_like
-from SimGen_Private.ldm.models.diffusion.sampling_util import norm_thresholding
+from simgen.ldm.modules.diffusionmodules.util import make_ddim_sampling_parameters, make_ddim_timesteps, noise_like
+from simgen.ldm.models.diffusion.sampling_util import norm_thresholding
 
 
 class PLMSSampler(object):

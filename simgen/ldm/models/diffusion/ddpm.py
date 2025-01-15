@@ -22,12 +22,12 @@ from lightning.pytorch.utilities import rank_zero_only
 from omegaconf import ListConfig
 
 
-from SimGen_Private.ldm.util import log_txt_as_img, exists, default, ismap, isimage, mean_flat, count_params, instantiate_from_config
-from SimGen_Private.ldm.modules.ema import LitEma
-from SimGen_Private.ldm.modules.distributions.distributions import normal_kl, DiagonalGaussianDistribution
-from SimGen_Private.ldm.models.autoencoder import IdentityFirstStage, AutoencoderKL
-from SimGen_Private.ldm.modules.diffusionmodules.util import make_beta_schedule, extract_into_tensor, noise_like
-from SimGen_Private.ldm.models.diffusion.ddim import DDIMSampler
+from simgen.ldm.util import log_txt_as_img, exists, default, ismap, isimage, mean_flat, count_params, instantiate_from_config
+from simgen.ldm.modules.ema import LitEma
+from simgen.ldm.modules.distributions.distributions import normal_kl, DiagonalGaussianDistribution
+from simgen.ldm.models.autoencoder import IdentityFirstStage, AutoencoderKL
+from simgen.ldm.modules.diffusionmodules.util import make_beta_schedule, extract_into_tensor, noise_like
+from simgen.ldm.models.diffusion.ddim import DDIMSampler
 
 
 __conditioning_keys__ = {'concat': 'c_concat',
