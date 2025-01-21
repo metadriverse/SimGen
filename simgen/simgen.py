@@ -130,7 +130,7 @@ class SimGenPipeline(Pipeline):
             sn_depth_image = np.array(sn_depth_image).astype(np.uint8)
         if sn_seg_image is not None and isinstance(sn_seg_image, PIL.Image.Image):
             sn_seg_image = np.array(sn_seg_image).astype(np.uint8)
-        elif sn_depth_image is not None:
+        if sn_depth_image is not None:
             anchor_image = sn_depth_image
         elif sn_seg_image is not None:
             anchor_image = sn_seg_image
