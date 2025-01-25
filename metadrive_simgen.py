@@ -181,7 +181,7 @@ if __name__ == "__main__":
 
     # ===== SimGen Setup =====
     pipeline = SimGenPipeline(torch_dtype=torch_dtype)
-    ddim_steps = 50
+    ddim_steps = 100
 
     # ===== MetaDrive Setup =====
     skip_steps = 7
@@ -205,8 +205,8 @@ if __name__ == "__main__":
             "no_traffic": False,
             "sequential_seed": True,
             "reactive_traffic": False,
-            "num_scenarios": 1,
-            "horizon": 3,
+            "num_scenarios": 9,
+            "horizon": 1000,
             "no_static_vehicles": False,
             "agent_configs": {
                 "default_agent": dict(use_special_color=True, vehicle_model="varying_dynamics_bounding_box")
@@ -269,7 +269,7 @@ if __name__ == "__main__":
         # " in a supermario style",
     ]
 
-    for ep in range(2):
+    for ep in range(9):
         frames = []
         env.reset()
         seed = np.random.randint(0, 100000)
