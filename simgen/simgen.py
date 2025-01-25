@@ -181,14 +181,16 @@ class SimGenPipeline(Pipeline):
             mask = torch.from_numpy(mask.copy()).cuda()
             mask = torch.stack([mask for _ in range(num_samples)], dim=0)
 
+            input_dict = dict(jpg=image, txt=anno, local_conditions=local_control, global_conditions=global_control,
+                            mask=mask, name="testing pipeline")
+
             # convert dtype using autocast
             with torch.autocast(device_type="cuda", dtype=self.dtype):
-                input_dict = dict(jpg=image, txt=anno, local_conditions=local_control, global_conditions=global_control,
-                                mask=mask, name="testing pipeline")
                 return_log = self.model.log_images(input_dict, N=num_samples, n_row=1, sample=False, ddim_steps=ddim_steps,
                                                 ddim_eta=eta, unconditional_guidance_scale=scale,
                                                 first_cond_model=self.first_cond_model, strength=strength,)
-                results = return_log[f"samples_cfg_scale_{scale:.2f}"]
+                
+            results = return_log[f"samples_cfg_scale_{scale:.2f}"]
 
 
             results = results.permute(0, 2, 3, 1).clamp(-1.0, 1.0).to(torch.float32)
