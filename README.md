@@ -92,6 +92,12 @@ You cloud also use simgen with metadrive.
 python metadrive_simgen.py
 ```
 
+Flag for half-precision / float16 inference:
+```bash
+python metadrive_simgen.py -p fp16
+```
+Otherwise, default setting will be float32.
+
 ## DIVA Dataset <a name="dataset"></a>
 
 ![method](./assets/diva_real.png "DIVA dataset")

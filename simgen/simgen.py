@@ -48,7 +48,6 @@ class SimGenPipeline(Pipeline):
         model = create_model(config_path).cpu()
         model.load_state_dict(load_state_dict(ckpt_path, location=device_map))
         self.model = model.cuda()
-        self.model.to(torch_dtype)
         self.dtype = torch_dtype
         self.ddim_sampler = DDIMSampler(model)
         self.split_back_ground = False
@@ -182,17 +181,15 @@ class SimGenPipeline(Pipeline):
             mask = torch.from_numpy(mask.copy()).cuda()
             mask = torch.stack([mask for _ in range(num_samples)], dim=0)
 
-            # convert dtype
-            image = image.to(self.dtype)
-            local_control = local_control.to(self.dtype)
-            global_control = global_control.to(self.dtype)
-            mask = mask.to(self.dtype)
-
             input_dict = dict(jpg=image, txt=anno, local_conditions=local_control, global_conditions=global_control,
-                              mask=mask, name="testing pipeline")
-            return_log = self.model.log_images(input_dict, N=num_samples, n_row=1, sample=False, ddim_steps=ddim_steps,
-                                               ddim_eta=eta, unconditional_guidance_scale=scale,
-                                               first_cond_model=self.first_cond_model, strength=strength,)
+                            mask=mask, name="testing pipeline")
+
+            # convert dtype using autocast
+            with torch.autocast(device_type="cuda", dtype=self.dtype):
+                return_log = self.model.log_images(input_dict, N=num_samples, n_row=1, sample=False, ddim_steps=ddim_steps,
+                                                ddim_eta=eta, unconditional_guidance_scale=scale,
+                                                first_cond_model=self.first_cond_model, strength=strength,)
+                
             results = return_log[f"samples_cfg_scale_{scale:.2f}"]
 
 

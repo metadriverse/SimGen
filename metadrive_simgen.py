@@ -1,9 +1,10 @@
 import time
-
+import sys
 import cv2
 import gymnasium as gym
 import mediapy
 import numpy as np
+import torch
 import tqdm
 from PIL import Image
 from PIL import ImageDraw, ImageFont
@@ -18,6 +19,7 @@ from metadrive.policy.replay_policy import ReplayEgoCarPolicy
 
 from simgen import SimGenPipeline
 
+from argparse import ArgumentParser
 
 def postprocess_semantic_image(image):
     """
@@ -63,7 +65,7 @@ def add_text(image, text_prompt):
     draw = ImageDraw.Draw(overlay)
 
     # Define the text and font
-    font_path = "Arial.ttf"  # Replace with your font path
+    font_path = "DejaVuSans.ttf"  # Replace with your font path
     font_size = 70
     font = ImageFont.truetype(font_path, font_size)
 
@@ -163,9 +165,22 @@ class SimGenObservation(BaseObservation):
 
 
 if __name__ == "__main__":
+    # ===== Accept Arguments =====
+
+    # define argument for precision, -p fp16 for fp16, -p fp32 for fp32, default is fp32
+    parser = ArgumentParser()
+    parser.add_argument(
+        "-p", "--precision", type=str, default="fp32", help="Model precision, fp16 or fp32"
+    )
+
+    args = parser.parse_args()
+
+    precision = args.precision
+    
+    torch_dtype = torch.float16 if precision == "fp16" else torch.float32
 
     # ===== SimGen Setup =====
-    pipeline = SimGenPipeline()
+    pipeline = SimGenPipeline(torch_dtype=torch_dtype)
     ddim_steps = 100
 
     # ===== MetaDrive Setup =====
