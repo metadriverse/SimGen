@@ -87,7 +87,10 @@ python test/test.py
 ```
 
 ### Run SimGen with Metadrive
-You cloud also use simgen with metadrive.
+You can use simgen with metadrive by running the following script. 
+The script will generate synthetic driving videos with the help of metadrive simulator and save
+the video to the repository root directory for each episode.
+
 ```bash
 python metadrive_simgen.py
 ```

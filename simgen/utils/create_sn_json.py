@@ -1,17 +1,21 @@
 import json
 import os
 
-SCENE_DATA_PATH  = "/bigdata/datasets/scenarionet/offscreen_render/data_nusc_trainval.json"
+SCENE_DATA_PATH = "/bigdata/datasets/scenarionet/offscreen_render/data_nusc_trainval.json"
 SN_PATH = "/bigdata/datasets/nuscenes/anno/sn/"
+
 
 def extract_id(filename):
     return filename.split("/")[-1].split(".")[0]
 
+
 def extract_id_with_ext(filename):
     return filename.split("/")[-1]
 
+
 def extract_sn_id(filename):
     return int(filename.split("_")[1].split(".")[0])
+
 
 def downsample_10_to_2(sn_data):
     """
@@ -23,6 +27,7 @@ def downsample_10_to_2(sn_data):
         new_data.append(sn_data[i])
 
     return new_data
+
 
 def downsampling(infos):
     img_path_list = infos['img_path']
@@ -37,16 +42,16 @@ def downsampling(infos):
     new_time_interval = []
 
     i = 0
-    while(i < len(time_interval)):
+    while (i < len(time_interval)):
         tmp_img_sweep_list, tmp_timestamp, tmp_time_interval = [], [], []
         one_index = []
         tmp_i = 0
-        while (sum(tmp_time_interval)<10 and i+tmp_i < len(time_interval)):
-            tmp_img_sweep_list.append(img_sweep_list[i+tmp_i])
-            tmp_timestamp.append(timestamp[i+tmp_i])
-            tmp_time_interval.append(time_interval[i+tmp_i])
+        while (sum(tmp_time_interval) < 10 and i + tmp_i < len(time_interval)):
+            tmp_img_sweep_list.append(img_sweep_list[i + tmp_i])
+            tmp_timestamp.append(timestamp[i + tmp_i])
+            tmp_time_interval.append(time_interval[i + tmp_i])
             # print(time_interval[i+tmp_i])
-            if time_interval[i+tmp_i] == 1:
+            if time_interval[i + tmp_i] == 1:
                 one_index.append(tmp_i)
             tmp_i += 1
         # assert len(tmp_time_interval) >= 5
@@ -76,6 +81,7 @@ def downsampling(infos):
         'time_interval': new_time_interval
     }
     return new_infos
+
 
 with open(SCENE_DATA_PATH, 'r') as f:
     data = json.load(f)
@@ -110,7 +116,7 @@ for scene in data:
     # print("cam_path", cam_path)
     # depth_path = os.path.join(scene_path, 'Depth_city')
     # seg_path = os.path.join(scene_path, 'Seg_FRONT')
-    
+
     # print(os.listdir(cam_path))
     # print(os.listdir(depth_path))
     # print("seg",os.listdir(seg_path))
@@ -123,7 +129,6 @@ for scene in data:
     sn_imgs = sorted(sn_imgs, key=lambda x: extract_sn_id(x))
     # print(sn_imgs)
 
-
     # print("lens", len(sn_imgs), len(sn_depths), len(sn_segs))
     # sn_imgs = downsample_10_to_2(sn_imgs)
     # sn_depths = downsample_10_to_2(sn_depths)
@@ -131,11 +136,10 @@ for scene in data:
     # print("lens", len(sn_imgs), len(sn_depths), len(sn_segs))
     # print(sn_imgs)
 
-
     # now we pair up the sn images with the nuscenes images
     # print(len(sn_imgs), len(imgs))
     # assert len(sn_imgs) == len(imgs)
-    length = min(len(sn_imgs), len(imgs))  
+    length = min(len(sn_imgs), len(imgs))
 
     for i in range(length):
         full_path = os.path.join(cam_path, sn_imgs[i])
@@ -147,19 +151,16 @@ for scene in data:
         full_path = os.path.join(cam_path, sn_imgs[-1])
         repeat_data[imgs[i]] = full_path
 
-
 with open(NEW_JSON_PATH, 'w') as f:
     json.dump(new_data, f)
 
 ## END CREATE JSON FILE WITH ASSOCIATED IMAGES
-
 
 ### START CREATE SOFTLINKS
 
 NEW_IMG_BASE = "/bigdata/Workspace/Uni-Controlnet/sn_softlinks_tmp/img_front"
 NEW_DEPTH_BASE = "/bigdata/Workspace/Uni-Controlnet/sn_softlinks_tmp/depth_front"
 NEW_SEG_BASE = "/bigdata/Workspace/Uni-Controlnet/sn_softlinks_tmp/seg_front"
-
 
 # create softlinks for each file in new_data where the softlink title is the value in new_data
 
@@ -173,7 +174,6 @@ with open(NEW_JSON_PATH, 'r') as f:
 #     # seg_path = sn_img.replace("CAM_FRONT", "Seg_FRONT")
 #     depth_path = sn_img.replace("CAM_FRONT", "Depth")
 #     seg_path = sn_img.replace("CAM_FRONT", "Seg")
-    
 
 #     # print(sn_img, nuscenes_img)
 

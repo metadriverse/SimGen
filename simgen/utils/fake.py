@@ -1,14 +1,14 @@
 import requests
 from PIL import Image
 
+
 def get_a_image(
-        image_width: int | None = None,
-        image_height: int | None = None,
+    image_width: int | None = None,
+    image_height: int | None = None,
 ) -> Image.Image:
     # prepare image and text prompt
     url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
     image = Image.open(requests.get(url, stream=True).raw)
-
 
     if image_width is not None and image_height is not None:
         # We first resize the longest side to the target size

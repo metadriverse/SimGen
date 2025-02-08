@@ -9,46 +9,50 @@ from simgen.ldm.util import log_txt_as_img
 from simgen.ldm.models.diffusion.ddim import DDIMSampler
 import numpy as np
 
-COLOR_DICT_CITY = np.array([
-    [0, 0, 0],          # 0: 'ignore'
-    [128, 64,128],      # 1: 'road'
-    [232, 35, 244],     # 2: 'sidewalk'
-    [70, 70, 70],       # 3: 'building'
-    [156,102,102],      # 4: 'wall'
-    [153,153,190],      # 5: 'fence'
-    [153,153,153],      # 6: 'pole'
-    [30, 170,250],      # 7: 'traffic light'
-    [0,220,  220],      # 8: 'traffic sign'
-    [35,142, 107],      # 9: 'vegetation'
-    [152,251,152],      # 10: 'terrain'
-    [180,130,70],       # 11: 'sky'
-    [60, 20, 220],      # 12: 'person'
-    [0,  0,  255],      # 13: 'rider'
-    [142, 0, 0],        # 14: 'car'
-    [70,  0, 0],        # 15: 'truck'
-    [100, 60,0],        # 16: 'bus'
-    [100, 80,0],        # 17: 'train'
-    [230, 0, 0],        # 18: 'motorcycle'
-    [32, 11, 119],       # 19: 'bicycle'
-    [189, 176, 55],      # 20: 'cross work'
-    [255, 255, 255],     # 21: 'lane line'
-])
-COLOR_DICT_CITY[:,[2,0]] = COLOR_DICT_CITY[:,[0,2]]
+COLOR_DICT_CITY = np.array(
+    [
+        [0, 0, 0],  # 0: 'ignore'
+        [128, 64, 128],  # 1: 'road'
+        [232, 35, 244],  # 2: 'sidewalk'
+        [70, 70, 70],  # 3: 'building'
+        [156, 102, 102],  # 4: 'wall'
+        [153, 153, 190],  # 5: 'fence'
+        [153, 153, 153],  # 6: 'pole'
+        [30, 170, 250],  # 7: 'traffic light'
+        [0, 220, 220],  # 8: 'traffic sign'
+        [35, 142, 107],  # 9: 'vegetation'
+        [152, 251, 152],  # 10: 'terrain'
+        [180, 130, 70],  # 11: 'sky'
+        [60, 20, 220],  # 12: 'person'
+        [0, 0, 255],  # 13: 'rider'
+        [142, 0, 0],  # 14: 'car'
+        [70, 0, 0],  # 15: 'truck'
+        [100, 60, 0],  # 16: 'bus'
+        [100, 80, 0],  # 17: 'train'
+        [230, 0, 0],  # 18: 'motorcycle'
+        [32, 11, 119],  # 19: 'bicycle'
+        [189, 176, 55],  # 20: 'cross work'
+        [255, 255, 255],  # 21: 'lane line'
+    ]
+)
+COLOR_DICT_CITY[:, [2, 0]] = COLOR_DICT_CITY[:, [0, 2]]
 
+COLOR_DICT_FORE = np.array(
+    [
+        [0, 0, 0],  # 0: 'ignore'
+        [128, 64, 128],  # 1: 'road'
+        [153, 153, 190],  # 2: 'fence'
+        [60, 20, 220],  # 3: 'person'
+        [142, 0, 0],  # 4: 'car'
+        [70, 0, 0],  # 5: 'truck'
+        [100, 60, 0],  # 6: 'bus'
+        [230, 0, 0],  # 7: 'motorcycle'
+        [32, 11, 119],  # 8: 'bicycle'
+        [0, 0, 0],  # 9: 'ignore'
+    ]
+)
+COLOR_DICT_FORE[:, [2, 0]] = COLOR_DICT_FORE[:, [0, 2]]
 
-COLOR_DICT_FORE = np.array([
-    [0, 0, 0],          # 0: 'ignore'
-    [128, 64,128],      # 1: 'road'
-    [153,153,190],      # 2: 'fence'
-    [60, 20, 220],      # 3: 'person'
-    [142, 0, 0],        # 4: 'car'
-    [70,  0, 0],        # 5: 'truck'
-    [100, 60,0],        # 6: 'bus'
-    [230, 0, 0],        # 7: 'motorcycle'
-    [32, 11, 119],      # 8: 'bicycle'
-    [0, 0, 0],          # 9: 'ignore'
-])
-COLOR_DICT_FORE[:,[2,0]] = COLOR_DICT_FORE[:,[0,2]]
 
 class T2IModel(LatentDiffusion):
 
@@ -92,8 +96,20 @@ class T2IModel(LatentDiffusion):
         return self.get_learned_conditioning([""] * N)
 
     @torch.no_grad()
-    def log_images(self, batch, N=4, n_row=2, sample=False, ddim_steps=50, ddim_eta=0.0, plot_denoise_rows=False,
-                   plot_diffusion_rows=False, unconditional_guidance_scale=9.0, strength=0.75, **kwargs):
+    def log_images(
+        self,
+        batch,
+        N=4,
+        n_row=2,
+        sample=False,
+        ddim_steps=50,
+        ddim_eta=0.0,
+        plot_denoise_rows=False,
+        plot_diffusion_rows=False,
+        unconditional_guidance_scale=9.0,
+        strength=0.75,
+        **kwargs
+    ):
         use_ddim = ddim_steps is not None
 
         log = dict()
@@ -101,7 +117,7 @@ class T2IModel(LatentDiffusion):
         ori_img = c["ori_img"][0][:N]
         sn_img = c["sn_img"][0][:N]
         c = c["c_crossattn"][0][:N]
-        
+
         N = min(z.shape[0], N)
         n_row = min(z.shape[0], n_row)
         log["reconstruction"] = self.decode_first_stage(z)
@@ -111,7 +127,7 @@ class T2IModel(LatentDiffusion):
         log["conditioning"] = log_txt_as_img((512, 512), batch[self.cond_stage_key], size=16)
         log["ori_img"] = ori_img
         # log["sn_img"] = sn_img
-        log["local_control"] = self.decode_cond(sn_img) # [-1,1]
+        log["local_control"] = self.decode_cond(sn_img)  # [-1,1]
         # log["local_control"] = sn_img
 
         # res = log["reconstruction"].cpu().numpy()
@@ -135,9 +151,9 @@ class T2IModel(LatentDiffusion):
             log["diffusion_row"] = diffusion_grid
 
         if sample:
-            samples, z_denoise_row = self.sample_log(cond={"c_crossattn": [c]},
-                                                     batch_size=N, ddim=use_ddim,
-                                                     ddim_steps=ddim_steps, eta=ddim_eta)
+            samples, z_denoise_row = self.sample_log(
+                cond={"c_crossattn": [c]}, batch_size=N, ddim=use_ddim, ddim_steps=ddim_steps, eta=ddim_eta
+            )
             x_samples = self.decode_first_stage(samples)
             log["samples"] = x_samples
             if plot_denoise_rows:
@@ -147,24 +163,27 @@ class T2IModel(LatentDiffusion):
         if unconditional_guidance_scale > 1.0:
             uc_cross = self.get_unconditional_conditioning(N)
             uc_full = {"c_crossattn": [uc_cross]}
-            samples_cfg, _ = self.sample_log(cond={"c_crossattn": [c]},
-                                             batch_size=N, ddim=use_ddim,
-                                             ddim_steps=ddim_steps, eta=ddim_eta,
-                                             unconditional_guidance_scale=unconditional_guidance_scale,
-                                             unconditional_conditioning=uc_full,
-                                             x_T=sn_img,
-                                             strength=strength,
-                                             )
+            samples_cfg, _ = self.sample_log(
+                cond={"c_crossattn": [c]},
+                batch_size=N,
+                ddim=use_ddim,
+                ddim_steps=ddim_steps,
+                eta=ddim_eta,
+                unconditional_guidance_scale=unconditional_guidance_scale,
+                unconditional_conditioning=uc_full,
+                x_T=sn_img,
+                strength=strength,
+            )
             x_samples_cfg = self.decode_first_stage(samples_cfg)
             log[f"samples_cfg_scale_{unconditional_guidance_scale:.2f}"] = x_samples_cfg
             decoded_img = self.decode_cond(x_samples_cfg, flip=False)
             # decoded_img = x_samples_cfg
 
-            log['output_depth'] = decoded_img[:,:3,...]
-            log['output_seg'] = decoded_img[:,3:,...]
+            log['output_depth'] = decoded_img[:, :3, ...]
+            log['output_seg'] = decoded_img[:, 3:, ...]
 
         return log
-    
+
     @torch.no_grad()
     def decode_first_stage(self, z, predict_cids=False, force_not_quantize=False):
         if predict_cids:
@@ -189,7 +208,7 @@ class T2IModel(LatentDiffusion):
         cond = cond.cpu().numpy().astype(np.float32)
         cond = einops.rearrange(cond, 'b c h w -> b h w c')
         # print(np.min(cond), np.max(cond))
-        cond = (cond + 1.0) / 2.0 # [0-1]
+        cond = (cond + 1.0) / 2.0  # [0-1]
         cond = (cond * 255.0).astype(int)
         # print(np.min(cond), np.max(cond))
         # print(cond)
@@ -209,8 +228,8 @@ class T2IModel(LatentDiffusion):
         # colormap = COLOR_DICT_CITY
         colormap = COLOR_DICT_FORE
         # seg_index = np.round(seg_index.astype(float)/12.0).astype(int)
-        seg_index = np.round(seg_index.astype(float)/28.0-1).astype(int)
-        
+        seg_index = np.round(seg_index.astype(float) / 28.0 - 1).astype(int)
+
         # seg_index = np.where(seg_index == 21, 0, seg_index)
 
         # # seg_index = np.where(np.isin(seg_index, [1, 2, 3]), 1, seg_index)
@@ -228,19 +247,21 @@ class T2IModel(LatentDiffusion):
         output_cond[:, :, :, 2] = depth
         output_cond[:, :, :, 3:] = seg_image
 
-        output_cond = output_cond.astype(np.float32)/255.0
+        output_cond = output_cond.astype(np.float32) / 255.0
         output_cond = (output_cond * 2.0) - 1.0
         output_cond = einops.rearrange(output_cond, 'b h w c -> b c h w')
         output_cond = torch.tensor(output_cond).to(self.device).to(memory_format=torch.contiguous_format).float()
-        
+
         return output_cond
 
-
     @torch.no_grad()
-    def sample_log(self, cond, batch_size, ddim, ddim_steps, eta, x_T, strength, unconditional_guidance_scale, unconditional_conditioning, **kwargs):
+    def sample_log(
+        self, cond, batch_size, ddim, ddim_steps, eta, x_T, strength, unconditional_guidance_scale,
+        unconditional_conditioning, **kwargs
+    ):
         ddim_sampler = DDIMSampler(self)
         # _, _, h, w = cond.shape
-        h, w = 896//2, 1536//2
+        h, w = 896 // 2, 1536 // 2
         shape = (self.channels, h // 8, w // 8)
 
         init_image = x_T
@@ -248,13 +269,18 @@ class T2IModel(LatentDiffusion):
 
         ddim_sampler.make_schedule(ddim_num_steps=ddim_steps, ddim_eta=eta, verbose=False)
         # strength = 0.75
-        t_enc = int(strength*ddim_steps)
+        t_enc = int(strength * ddim_steps)
         device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-        x_T = ddim_sampler.stochastic_encode(init_latent,torch.tensor([t_enc]*batch_size).to(device))
+        x_T = ddim_sampler.stochastic_encode(init_latent, torch.tensor([t_enc] * batch_size).to(device))
 
         c = cond
-        samples = ddim_sampler.decode(x_T, c, t_enc, unconditional_guidance_scale=unconditional_guidance_scale,
-                                                 unconditional_conditioning=unconditional_conditioning,)
+        samples = ddim_sampler.decode(
+            x_T,
+            c,
+            t_enc,
+            unconditional_guidance_scale=unconditional_guidance_scale,
+            unconditional_conditioning=unconditional_conditioning,
+        )
 
         # x_samples = self.decode_first_stage(samples)
 

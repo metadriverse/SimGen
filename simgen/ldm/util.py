@@ -7,6 +7,7 @@ import numpy as np
 from inspect import isfunction
 from PIL import Image, ImageDraw, ImageFont
 
+
 # following GenAD-private-genad_improved_yjz/sgm/modules/attention3d.py
 def repeat_as_img_seq(x, num_frames):
     if x is not None:
@@ -23,10 +24,11 @@ def repeat_as_img_seq(x, num_frames):
     else:
         return None
 
+
 def log_txt_as_img(wh, xc, size=10, N=1):
     # wh a tuple of (width, height)
     # xc a list of captions to plot
-    time = N//len(xc)
+    time = N // len(xc)
     if time > 1:
         xc = [item for item in xc for _ in range(time)]
 
@@ -58,7 +60,7 @@ def ismap(x):
 
 
 def isimage(x):
-    if not isinstance(x,torch.Tensor):
+    if not isinstance(x, torch.Tensor):
         return False
     return (len(x.shape) == 4) and (x.shape[1] == 3 or x.shape[1] == 1)
 
@@ -108,9 +110,18 @@ def get_obj_from_str(string, reload=False):
 
 class AdamWwithEMAandWings(optim.Optimizer):
     # credit to https://gist.github.com/crowsonkb/65f7265353f403714fce3b2595e0b298
-    def __init__(self, params, lr=1.e-3, betas=(0.9, 0.999), eps=1.e-8,  # TODO: check hyperparameters before using
-                 weight_decay=1.e-2, amsgrad=False, ema_decay=0.9999,   # ema decay to match previous code
-                 ema_power=1., param_names=()):
+    def __init__(
+        self,
+        params,
+        lr=1.e-3,
+        betas=(0.9, 0.999),
+        eps=1.e-8,  # TODO: check hyperparameters before using
+        weight_decay=1.e-2,
+        amsgrad=False,
+        ema_decay=0.9999,  # ema decay to match previous code
+        ema_power=1.,
+        param_names=()
+    ):
         """AdamW that saves EMA versions of the parameters."""
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
@@ -124,9 +135,16 @@ class AdamWwithEMAandWings(optim.Optimizer):
             raise ValueError("Invalid weight_decay value: {}".format(weight_decay))
         if not 0.0 <= ema_decay <= 1.0:
             raise ValueError("Invalid ema_decay value: {}".format(ema_decay))
-        defaults = dict(lr=lr, betas=betas, eps=eps,
-                        weight_decay=weight_decay, amsgrad=amsgrad, ema_decay=ema_decay,
-                        ema_power=ema_power, param_names=param_names)
+        defaults = dict(
+            lr=lr,
+            betas=betas,
+            eps=eps,
+            weight_decay=weight_decay,
+            amsgrad=amsgrad,
+            ema_decay=ema_decay,
+            ema_power=ema_power,
+            param_names=param_names
+        )
         super().__init__(params, defaults)
 
     def __setstate__(self, state):
@@ -195,21 +213,23 @@ class AdamWwithEMAandWings(optim.Optimizer):
                 # record the step after step update
                 state_steps.append(state['step'])
 
-            optim._functional.adamw(params_with_grad,
-                    grads,
-                    exp_avgs,
-                    exp_avg_sqs,
-                    max_exp_avg_sqs,
-                    state_steps,
-                    amsgrad=amsgrad,
-                    beta1=beta1,
-                    beta2=beta2,
-                    lr=group['lr'],
-                    weight_decay=group['weight_decay'],
-                    eps=group['eps'],
-                    maximize=False)
+            optim._functional.adamw(
+                params_with_grad,
+                grads,
+                exp_avgs,
+                exp_avg_sqs,
+                max_exp_avg_sqs,
+                state_steps,
+                amsgrad=amsgrad,
+                beta1=beta1,
+                beta2=beta2,
+                lr=group['lr'],
+                weight_decay=group['weight_decay'],
+                eps=group['eps'],
+                maximize=False
+            )
 
-            cur_ema_decay = min(ema_decay, 1 - state['step'] ** -ema_power)
+            cur_ema_decay = min(ema_decay, 1 - state['step']**-ema_power)
             for param, ema_param in zip(params_with_grad, ema_params_with_grad):
                 ema_param.mul_(cur_ema_decay).add_(param.float(), alpha=1 - cur_ema_decay)
 

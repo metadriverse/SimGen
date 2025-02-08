@@ -1,6 +1,6 @@
 import sys
 if './' not in sys.path:
-	sys.path.append('./')
+    sys.path.append('./')
 
 import torch
 
@@ -25,6 +25,7 @@ def init_local(sd_weights_path, config_path, output_path):
     torch.save(model.state_dict(), output_path)
     print('Done.')
 
+
 def init_global(sd_weights_path, config_path, output_path):
     pretrained_weights = torch.load(sd_weights_path)
     if 'state_dict' in pretrained_weights:
@@ -41,6 +42,7 @@ def init_global(sd_weights_path, config_path, output_path):
     model.load_state_dict(target_dict, strict=True)
     torch.save(model.state_dict(), output_path)
     print('Done.')
+
 
 def integrate(local_weights, global_weights, config_path, output_path):
     local_weights = torch.load(local_weights)

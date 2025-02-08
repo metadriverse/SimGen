@@ -13,7 +13,6 @@ from scipy.linalg import orth
 import albumentations
 
 import SimGen_Private.ldm.modules.image_degradation.utils_image as util
-
 """
 # --------------------------------------------
 # Super-Resolution
@@ -24,6 +23,7 @@ import SimGen_Private.ldm.modules.image_degradation.utils_image as util
 # From 2019/03--2021/08
 # --------------------------------------------
 """
+
 
 def modcrop_np(img, sf):
     '''
@@ -156,8 +156,7 @@ def gen_kernel(k_size=np.array([15, 15]), scale_factor=np.array([4, 4]), min_var
 
     # Set COV matrix using Lambdas and Theta
     LAMBDA = np.diag([lambda_1, lambda_2])
-    Q = np.array([[np.cos(theta), -np.sin(theta)],
-                  [np.sin(theta), np.cos(theta)]])
+    Q = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
     SIGMA = Q @ LAMBDA @ Q.T
     INV_SIGMA = np.linalg.inv(SIGMA)[None, None, :, :]
 
@@ -325,8 +324,8 @@ def add_blur(img, sf=4):
     wd2 = 4.0 + sf
     wd = 2.0 + 0.2 * sf
 
-    wd2 = wd2/4
-    wd = wd/4
+    wd2 = wd2 / 4
+    wd = wd / 4
 
     if random.random() < 0.5:
         l1 = wd2 * random.random()
@@ -369,6 +368,7 @@ def add_resize(img, sf=4):
 #     img = np.clip(img, 0.0, 1.0)
 #     return img
 
+
 def add_Gaussian_noise(img, noise_level1=2, noise_level2=25):
     noise_level = random.randint(noise_level1, noise_level2)
     rnum = np.random.rand()
@@ -381,7 +381,7 @@ def add_Gaussian_noise(img, noise_level1=2, noise_level2=25):
         D = np.diag(np.random.rand(3))
         U = orth(np.random.rand(3, 3))
         conv = np.dot(np.dot(np.transpose(U), D), U)
-        img = img + np.random.multivariate_normal([0, 0, 0], np.abs(L ** 2 * conv), img.shape[:2]).astype(np.float32)
+        img = img + np.random.multivariate_normal([0, 0, 0], np.abs(L**2 * conv), img.shape[:2]).astype(np.float32)
     img = np.clip(img, 0.0, 1.0)
     return img
 
@@ -399,14 +399,14 @@ def add_speckle_noise(img, noise_level1=2, noise_level2=25):
         D = np.diag(np.random.rand(3))
         U = orth(np.random.rand(3, 3))
         conv = np.dot(np.dot(np.transpose(U), D), U)
-        img += img * np.random.multivariate_normal([0, 0, 0], np.abs(L ** 2 * conv), img.shape[:2]).astype(np.float32)
+        img += img * np.random.multivariate_normal([0, 0, 0], np.abs(L**2 * conv), img.shape[:2]).astype(np.float32)
     img = np.clip(img, 0.0, 1.0)
     return img
 
 
 def add_Poisson_noise(img):
     img = np.clip((img * 255.0).round(), 0, 255) / 255.
-    vals = 10 ** (2 * random.random() + 2.0)  # [2, 4]
+    vals = 10**(2 * random.random() + 2.0)  # [2, 4]
     if random.random() < 0.5:
         img = np.random.poisson(img * vals).astype(np.float32) / vals
     else:
@@ -465,8 +465,9 @@ def degradation_bsrgan(img, sf=4, lq_patchsize=72, isp_model=None):
 
     if sf == 4 and random.random() < scale2_prob:  # downsample1
         if np.random.rand() < 0.5:
-            img = cv2.resize(img, (int(1 / 2 * img.shape[1]), int(1 / 2 * img.shape[0])),
-                             interpolation=random.choice([1, 2, 3]))
+            img = cv2.resize(
+                img, (int(1 / 2 * img.shape[1]), int(1 / 2 * img.shape[0])), interpolation=random.choice([1, 2, 3])
+            )
         else:
             img = util.imresize_np(img, 1 / 2, True)
         img = np.clip(img, 0.0, 1.0)
@@ -490,8 +491,10 @@ def degradation_bsrgan(img, sf=4, lq_patchsize=72, isp_model=None):
             # downsample2
             if random.random() < 0.75:
                 sf1 = random.uniform(1, 2 * sf)
-                img = cv2.resize(img, (int(1 / sf1 * img.shape[1]), int(1 / sf1 * img.shape[0])),
-                                 interpolation=random.choice([1, 2, 3]))
+                img = cv2.resize(
+                    img, (int(1 / sf1 * img.shape[1]), int(1 / sf1 * img.shape[0])),
+                    interpolation=random.choice([1, 2, 3])
+                )
             else:
                 k = fspecial('gaussian', 25, random.uniform(0.1, 0.6 * sf))
                 k_shifted = shift_pixel(k, sf)
@@ -554,8 +557,10 @@ def degradation_bsrgan_variant(image, sf=4, isp_model=None, up=False):
 
     if sf == 4 and random.random() < scale2_prob:  # downsample1
         if np.random.rand() < 0.5:
-            image = cv2.resize(image, (int(1 / 2 * image.shape[1]), int(1 / 2 * image.shape[0])),
-                               interpolation=random.choice([1, 2, 3]))
+            image = cv2.resize(
+                image, (int(1 / 2 * image.shape[1]), int(1 / 2 * image.shape[0])),
+                interpolation=random.choice([1, 2, 3])
+            )
         else:
             image = util.imresize_np(image, 1 / 2, True)
         image = np.clip(image, 0.0, 1.0)
@@ -582,8 +587,10 @@ def degradation_bsrgan_variant(image, sf=4, isp_model=None, up=False):
             # downsample2
             if random.random() < 0.8:
                 sf1 = random.uniform(1, 2 * sf)
-                image = cv2.resize(image, (int(1 / sf1 * image.shape[1]), int(1 / sf1 * image.shape[0])),
-                                   interpolation=random.choice([1, 2, 3]))
+                image = cv2.resize(
+                    image, (int(1 / sf1 * image.shape[1]), int(1 / sf1 * image.shape[0])),
+                    interpolation=random.choice([1, 2, 3])
+                )
             else:
                 k = fspecial('gaussian', 25, random.uniform(0.1, 0.6 * sf))
                 k_shifted = shift_pixel(k, sf)
@@ -617,11 +624,11 @@ def degradation_bsrgan_variant(image, sf=4, isp_model=None, up=False):
     image = add_JPEG_noise(image)
     image = util.single2uint(image)
     if up:
-        image = cv2.resize(image, (w1, h1), interpolation=cv2.INTER_CUBIC)  # todo: random, as above? want to condition on it then
+        image = cv2.resize(
+            image, (w1, h1), interpolation=cv2.INTER_CUBIC
+        )  # todo: random, as above? want to condition on it then
     example = {"image": image}
     return example
-
-
 
 
 if __name__ == '__main__':
@@ -638,14 +645,17 @@ if __name__ == '__main__':
         img_lq = deg_fn(img)["image"]
         img_hq, img_lq = util.uint2single(img_hq), util.uint2single(img_lq)
         print(img_lq)
-        img_lq_bicubic = albumentations.SmallestMaxSize(max_size=h, interpolation=cv2.INTER_CUBIC)(image=img_hq)["image"]
+        img_lq_bicubic = albumentations.SmallestMaxSize(
+            max_size=h, interpolation=cv2.INTER_CUBIC
+        )(image=img_hq)["image"]
         print(img_lq.shape)
         print("bicubic", img_lq_bicubic.shape)
         print(img_hq.shape)
-        lq_nearest = cv2.resize(util.single2uint(img_lq), (int(sf * img_lq.shape[1]), int(sf * img_lq.shape[0])),
-                                interpolation=0)
-        lq_bicubic_nearest = cv2.resize(util.single2uint(img_lq_bicubic),
-                                        (int(sf * img_lq.shape[1]), int(sf * img_lq.shape[0])),
-                                        interpolation=0)
+        lq_nearest = cv2.resize(
+            util.single2uint(img_lq), (int(sf * img_lq.shape[1]), int(sf * img_lq.shape[0])), interpolation=0
+        )
+        lq_bicubic_nearest = cv2.resize(
+            util.single2uint(img_lq_bicubic), (int(sf * img_lq.shape[1]), int(sf * img_lq.shape[0])), interpolation=0
+        )
         img_concat = np.concatenate([lq_bicubic_nearest, lq_nearest, util.single2uint(img_hq)], axis=1)
         util.imsave(img_concat, str(i) + '.png')

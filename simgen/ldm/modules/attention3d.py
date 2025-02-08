@@ -19,12 +19,13 @@ except:
 import os
 _ATTN_PRECISION = os.environ.get("ATTN_PRECISION", "fp32")
 
+
 def exists(val):
     return val is not None
 
 
 def uniq(arr):
-    return{el: True for el in arr}.keys()
+    return {el: True for el in arr}.keys()
 
 
 def default(val, d):
@@ -61,21 +62,13 @@ class FeedForward(nn.Module):
         super().__init__()
         inner_dim = int(dim * mult)
         dim_out = default(dim_out, dim)
-        project_in = nn.Sequential(
-            nn.Linear(dim, inner_dim),
-            nn.GELU()
-        ) if not glu else GEGLU(dim, inner_dim)
+        project_in = nn.Sequential(nn.Linear(dim, inner_dim), nn.GELU()) if not glu else GEGLU(dim, inner_dim)
 
-        self.net = nn.Sequential(
-            project_in,
-            nn.Dropout(dropout),
-            nn.Linear(inner_dim, dim_out)
-        )
+        self.net = nn.Sequential(project_in, nn.Dropout(dropout), nn.Linear(inner_dim, dim_out))
 
         if zero_init:
             nn.init.constant_(self.net[-1].weight, 0)
             nn.init.constant_(self.net[-1].bias, 0)
-
 
     def forward(self, x):
         return self.net(x)
@@ -93,11 +86,11 @@ def zero_module(module):
 def Normalize(in_channels):
     return torch.nn.GroupNorm(num_groups=32, num_channels=in_channels, eps=1e-6, affine=True)
 
+
 class RelativePosition(nn.Module):
     """
     https://github.com/evelinehong/Transformer_Relative_Position_PyTorch/blob/master/relative_position.py
     """
-
     def __init__(self, num_units, max_relative_position):
         super().__init__()
         self.num_units = num_units
@@ -116,34 +109,32 @@ class RelativePosition(nn.Module):
         embeddings = self.embeddings_table[final_mat]
         return embeddings
 
+
 # modified following GenAD-private-genad_improved_yjz/sgm/modules/attention3d.py
 class TemporalAttention(nn.Module):
     def __init__(
-            self,
-            query_dim,
-            context_dim=None,
-            heads=8,
-            dim_head=64,
-            dropout=0.,
-            use_relative_position=False,  # use relative positional representation in temporal attention or not
-            temporal_length=None,  # for relative positional representation
-            zero_init=False
+        self,
+        query_dim,
+        context_dim=None,
+        heads=8,
+        dim_head=64,
+        dropout=0.,
+        use_relative_position=False,  # use relative positional representation in temporal attention or not
+        temporal_length=None,  # for relative positional representation
+        zero_init=False
     ):
         super().__init__()
         inner_dim = dim_head * heads
         context_dim = default(context_dim, query_dim)
         self.context_dim = context_dim
-        self.scale = dim_head ** -0.5
+        self.scale = dim_head**-0.5
         self.heads = heads
         self.temporal_length = temporal_length
         self.use_relative_position = use_relative_position
         self.to_q = nn.Linear(query_dim, inner_dim, bias=False)
         self.to_k = nn.Linear(context_dim, inner_dim, bias=False)
         self.to_v = nn.Linear(context_dim, inner_dim, bias=False)
-        self.to_out = nn.Sequential(
-            nn.Linear(inner_dim, query_dim),
-            nn.Dropout(dropout)
-        )
+        self.to_out = nn.Sequential(nn.Linear(inner_dim, query_dim), nn.Dropout(dropout))
 
         if use_relative_position:
             assert temporal_length is not None
@@ -196,32 +187,17 @@ class TemporalAttention(nn.Module):
         forward_inputs = (x, )
         return checkpoint(self._forward, forward_inputs, self.parameters(), True)
 
+
 class SpatialSelfAttention(nn.Module):
     def __init__(self, in_channels):
         super().__init__()
         self.in_channels = in_channels
 
         self.norm = Normalize(in_channels)
-        self.q = torch.nn.Conv2d(in_channels,
-                                 in_channels,
-                                 kernel_size=1,
-                                 stride=1,
-                                 padding=0)
-        self.k = torch.nn.Conv2d(in_channels,
-                                 in_channels,
-                                 kernel_size=1,
-                                 stride=1,
-                                 padding=0)
-        self.v = torch.nn.Conv2d(in_channels,
-                                 in_channels,
-                                 kernel_size=1,
-                                 stride=1,
-                                 padding=0)
-        self.proj_out = torch.nn.Conv2d(in_channels,
-                                        in_channels,
-                                        kernel_size=1,
-                                        stride=1,
-                                        padding=0)
+        self.q = torch.nn.Conv2d(in_channels, in_channels, kernel_size=1, stride=1, padding=0)
+        self.k = torch.nn.Conv2d(in_channels, in_channels, kernel_size=1, stride=1, padding=0)
+        self.v = torch.nn.Conv2d(in_channels, in_channels, kernel_size=1, stride=1, padding=0)
+        self.proj_out = torch.nn.Conv2d(in_channels, in_channels, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x):
         h_ = x
@@ -231,7 +207,7 @@ class SpatialSelfAttention(nn.Module):
         v = self.v(h_)
 
         # compute attention
-        b,c,h,w = q.shape
+        b, c, h, w = q.shape
         q = rearrange(q, 'b c h w -> b (h w) c')
         k = rearrange(k, 'b c h w -> b c (h w)')
         w_ = torch.einsum('bij,bjk->bik', q, k)
@@ -246,7 +222,8 @@ class SpatialSelfAttention(nn.Module):
         h_ = rearrange(h_, 'b c (h w) -> b c h w', h=h)
         h_ = self.proj_out(h_)
 
-        return x+h_
+        return x + h_
+
 
 # modified following GenAD-private-genad_improved_yjz/sgm/modules/attention3d.py
 class CrossAttention(nn.Module):
@@ -255,17 +232,14 @@ class CrossAttention(nn.Module):
         inner_dim = dim_head * heads
         context_dim = default(context_dim, query_dim)
 
-        self.scale = dim_head ** -0.5
+        self.scale = dim_head**-0.5
         self.heads = heads
 
         self.to_q = nn.Linear(query_dim, inner_dim, bias=False)
         self.to_k = nn.Linear(context_dim, inner_dim, bias=False)
         self.to_v = nn.Linear(context_dim, inner_dim, bias=False)
 
-        self.to_out = nn.Sequential(
-            nn.Linear(inner_dim, query_dim),
-            nn.Dropout(dropout)
-        )
+        self.to_out = nn.Sequential(nn.Linear(inner_dim, query_dim), nn.Dropout(dropout))
 
         if zero_init:
             nn.init.constant_(self.to_out[0].weight, 0)
@@ -283,15 +257,15 @@ class CrossAttention(nn.Module):
         q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> (b h) n d', h=h), (q, k, v))
 
         # force cast to fp32 to avoid overflowing
-        if _ATTN_PRECISION =="fp32":
-            with torch.autocast(enabled=False, device_type = 'cuda'):
+        if _ATTN_PRECISION == "fp32":
+            with torch.autocast(enabled=False, device_type='cuda'):
                 q, k = q.float(), k.float()
                 sim = einsum('b i d, b j d -> b i j', q, k) * self.scale
         else:
             sim = einsum('b i d, b j d -> b i j', q, k) * self.scale
-        
+
         del q, k
-    
+
         if exists(mask):
             mask = rearrange(mask, 'b ... -> b (...)')
             max_neg_value = -torch.finfo(sim.dtype).max
@@ -304,14 +278,18 @@ class CrossAttention(nn.Module):
         out = einsum('b i j, b j d -> b i d', sim, v)
         out = rearrange(out, '(b h) n d -> b n (h d)', h=h)
         return self.to_out(out)
+
     def forward(self, x, context=None, mask=None):
         forward_inputs = (x, context)
         return checkpoint(self._forward, forward_inputs, self.parameters(), self.checkpoint)
 
+
 # modified following GenAD-private-genad_improved_yjz/sgm/modules/attention3d.py
 class MemoryEfficientCrossAttention(nn.Module):
     # https://github.com/MatthieuTPHR/diffusers/blob/d80b531ff8060ec1ea982b65a1b8df70f73aa67c/src/diffusers/models/attention.py#L223
-    def __init__(self, query_dim, context_dim=None, heads=8, dim_head=64, dropout=0.0, zero_init=False, checkpoint=True):
+    def __init__(
+        self, query_dim, context_dim=None, heads=8, dim_head=64, dropout=0.0, zero_init=False, checkpoint=True
+    ):
         super().__init__()
         # print(f"Setting up {self.__class__.__name__}. Query dim is {query_dim}, context_dim is {context_dim} and using "
         #       f"{heads} heads.")
@@ -340,11 +318,8 @@ class MemoryEfficientCrossAttention(nn.Module):
 
         b, _, _ = q.shape
         q, k, v = map(
-            lambda t: t.unsqueeze(3)
-            .reshape(b, t.shape[1], self.heads, self.dim_head)
-            .permute(0, 2, 1, 3)
-            .reshape(b * self.heads, t.shape[1], self.dim_head)
-            .contiguous(),
+            lambda t: t.unsqueeze(3).reshape(b, t.shape[1], self.heads, self.dim_head).permute(0, 2, 1, 3).
+            reshape(b * self.heads, t.shape[1], self.dim_head).contiguous(),
             (q, k, v),
         )
 
@@ -354,12 +329,12 @@ class MemoryEfficientCrossAttention(nn.Module):
         if exists(mask):
             raise NotImplementedError
         out = (
-            out.unsqueeze(0)
-            .reshape(b, self.heads, out.shape[1], self.dim_head)
-            .permute(0, 2, 1, 3)
-            .reshape(b, out.shape[1], self.heads * self.dim_head)
+            out.unsqueeze(0).reshape(b, self.heads, out.shape[1],
+                                     self.dim_head).permute(0, 2, 1,
+                                                            3).reshape(b, out.shape[1], self.heads * self.dim_head)
         )
         return self.to_out(out)
+
 
 ### start GenAD-private-genad_improved_yjz/sgm/modules/attention3d.py utils
 def expand_first(feat, scale=1.):
@@ -371,6 +346,7 @@ def expand_first(feat, scale=1.):
         feat_style = feat_style.repeat(1, b // 2, 1, 1, 1)
         feat_style = torch.cat([feat_style[:, :1], scale * feat_style[:, 1:]], dim=1)
     return feat_style.reshape(*feat.shape)
+
 
 def concat_first(feat, dim=2, scale=1.):
     feat_style = expand_first(feat, scale=scale)
@@ -386,6 +362,7 @@ def calc_mean_std(feat, dim=-2, eps: float = 1e-5):
 
     return feat_mean, feat_std
 
+
 def adain(feat):
     feat_mean, feat_std = calc_mean_std(feat)
     feat_style_mean = expand_first(feat_mean)
@@ -393,6 +370,7 @@ def adain(feat):
     feat = (feat - feat_mean) / feat_std
     feat = feat * feat_style_std + feat_style_mean
     return feat
+
 
 def apply_adain(x):
     # mini_test
@@ -402,8 +380,8 @@ def apply_adain(x):
     # return x
 
     # x: b t hw c
-    n_cond = 2 # !! Hard coded
-    x_cond, x_first, x_rest = x[:, :n_cond], x[:, n_cond:n_cond+1], x[:, n_cond+1:]
+    n_cond = 2  # !! Hard coded
+    x_cond, x_first, x_rest = x[:, :n_cond], x[:, n_cond:n_cond + 1], x[:, n_cond + 1:]
     # x_rest = torch.zeros_like(x_rest)
     # out = torch.cat([x_cond, x_first, x_rest], dim=1)
     # return out
@@ -415,10 +393,10 @@ def apply_adain(x):
     # x_rest:  b T-3 hw c
     tgt_mean, tgt_std = calc_mean_std(x_rest, dim=-2)
 
-    x_pred = torch.cat([x_first, x_rest], dim=1) # b T-2 hw c
-    x_shift_left = x_pred[:, :-1] # b T-3 hw c
-    x_shift_right = x_pred[:, 1:] # b T-3 hw c
-    x_concat = torch.cat([x_shift_left, x_shift_right], dim=-2) # b T-3 2hw c
+    x_pred = torch.cat([x_first, x_rest], dim=1)  # b T-2 hw c
+    x_shift_left = x_pred[:, :-1]  # b T-3 hw c
+    x_shift_right = x_pred[:, 1:]  # b T-3 hw c
+    x_concat = torch.cat([x_shift_left, x_shift_right], dim=-2)  # b T-3 2hw c
     ref_mean, ref_std = calc_mean_std(x_concat, dim=-2)
 
     # ! Use the first prediction frame
@@ -428,10 +406,10 @@ def apply_adain(x):
 
     # x_rest_cat = torch.cat([x_first_rep, x_rest], dim=1) # b 2 T-3 hw c
     # x_rest_cat = x_rest_cat.transpose(1, 2) # b T-3 2 hw c
-    
+
     # x_rest_cat = rearrange(x_rest_cat, 'b t k s c -> b t (k s) c')  # b T-3 2hw c
     # ref_mean, ref_std = calc_mean_std(x_rest_cat, dim=-2)
-    
+
     x_rest = (x_rest_original - tgt_mean) / tgt_std
     x_rest = x_rest * ref_std + ref_mean
 
@@ -444,7 +422,9 @@ def apply_adain(x):
     return out2
     # return out
 
+
 ### end GenAD-private-genad_improved_yjz/sgm/modules/attention3d.py utils
+
 
 # modified following GenAD-private-genad_improved_yjz/sgm/modules/attention3d.py
 class BasicSpatialTemporalTransformerBlock(nn.Module):
@@ -452,33 +432,43 @@ class BasicSpatialTemporalTransformerBlock(nn.Module):
         "softmax": CrossAttention,  # vanilla attention
         "softmax-xformers": MemoryEfficientCrossAttention
     }
-    def __init__(self, 
-            dim, 
-            n_heads, 
-            d_head, 
-            dropout=0., 
-            context_dim=None, 
-            gated_ff=True, 
-            checkpoint=True,
-            disable_self_attn=False, 
-            attn_mode="softmax",
-            num_frames=1,
-            concat_cond=False,
-            causal_temp=False,
-            assist_attn=False,
-            criss_cross=False,
-            use_relative_position=True,
-            zero_init_temporal=True):
+
+    def __init__(
+        self,
+        dim,
+        n_heads,
+        d_head,
+        dropout=0.,
+        context_dim=None,
+        gated_ff=True,
+        checkpoint=True,
+        disable_self_attn=False,
+        attn_mode="softmax",
+        num_frames=1,
+        concat_cond=False,
+        causal_temp=False,
+        assist_attn=False,
+        criss_cross=False,
+        use_relative_position=True,
+        zero_init_temporal=True
+    ):
         super().__init__()
         attn_mode = "softmax-xformers" if XFORMERS_IS_AVAILBLE else "softmax"
         assert attn_mode in self.ATTENTION_MODES
         attn_cls = self.ATTENTION_MODES[attn_mode]
         self.disable_self_attn = disable_self_attn
-        self.attn1 = attn_cls(query_dim=dim, heads=n_heads, dim_head=d_head, dropout=dropout,
-                              context_dim=context_dim if self.disable_self_attn else None, checkpoint=False)  # is a self-attention if not self.disable_self_attn
+        self.attn1 = attn_cls(
+            query_dim=dim,
+            heads=n_heads,
+            dim_head=d_head,
+            dropout=dropout,
+            context_dim=context_dim if self.disable_self_attn else None,
+            checkpoint=False
+        )  # is a self-attention if not self.disable_self_attn
         self.ff = FeedForward(dim, dropout=dropout, glu=gated_ff)
-        self.attn2 = attn_cls(query_dim=dim, context_dim=context_dim,
-                              heads=n_heads, dim_head=d_head, dropout=dropout, checkpoint=False)  # is self-attn if context is none
+        self.attn2 = attn_cls(
+            query_dim=dim, context_dim=context_dim, heads=n_heads, dim_head=d_head, dropout=dropout, checkpoint=False
+        )  # is self-attn if context is none
         self.norm1 = nn.LayerNorm(dim)
         self.norm2 = nn.LayerNorm(dim)
         self.norm3 = nn.LayerNorm(dim)
@@ -493,20 +483,35 @@ class BasicSpatialTemporalTransformerBlock(nn.Module):
             # self.temporal_ff_norm = nn.LayerNorm(dim)
 
             # 1st temporal self-attn
-            self.temporal_attn1 = TemporalAttention(query_dim=dim, heads=n_heads, dim_head=d_head, dropout=dropout,
-                                                    temporal_length=num_frames,
-                                                    use_relative_position=use_relative_position,
-                                                    zero_init=zero_init_temporal)
+            self.temporal_attn1 = TemporalAttention(
+                query_dim=dim,
+                heads=n_heads,
+                dim_head=d_head,
+                dropout=dropout,
+                temporal_length=num_frames,
+                use_relative_position=use_relative_position,
+                zero_init=zero_init_temporal
+            )
             # 2nd temporal self-attn
-            self.temporal_attn2 = TemporalAttention(query_dim=dim, heads=n_heads, dim_head=d_head, dropout=dropout,
-                                                    temporal_length=num_frames,
-                                                    use_relative_position=use_relative_position,
-                                                    zero_init=zero_init_temporal)
+            self.temporal_attn2 = TemporalAttention(
+                query_dim=dim,
+                heads=n_heads,
+                dim_head=d_head,
+                dropout=dropout,
+                temporal_length=num_frames,
+                use_relative_position=use_relative_position,
+                zero_init=zero_init_temporal
+            )
             # 3rd temporal self-attn
-            self.temporal_attn3 = TemporalAttention(query_dim=dim, heads=n_heads, dim_head=d_head, dropout=dropout,
-                                                    temporal_length=num_frames,
-                                                    use_relative_position=use_relative_position,
-                                                    zero_init=zero_init_temporal)
+            self.temporal_attn3 = TemporalAttention(
+                query_dim=dim,
+                heads=n_heads,
+                dim_head=d_head,
+                dropout=dropout,
+                temporal_length=num_frames,
+                use_relative_position=use_relative_position,
+                zero_init=zero_init_temporal
+            )
             self.temporal_norm1 = nn.LayerNorm(dim)
             self.temporal_norm2 = nn.LayerNorm(dim)
             self.temporal_norm3 = nn.LayerNorm(dim)
@@ -522,7 +527,7 @@ class BasicSpatialTemporalTransformerBlock(nn.Module):
                 self.temporal_cond_gate1 = nn.Parameter(torch.tensor([0.]))  # TODO: just zero init the embedding
                 self.temporal_cond_gate2 = nn.Parameter(torch.tensor([0.]))
                 self.temporal_cond_gate3 = nn.Parameter(torch.tensor([0.]))
-            
+
             if assist_attn:
                 self.temporal_assist_attn_horizontal1 = attn_cls(
                     query_dim=dim,
@@ -590,14 +595,15 @@ class BasicSpatialTemporalTransformerBlock(nn.Module):
         self.use_adaIN = USE_ADAIN
         if self.use_adaIN:
             print("!!!Applying AdaLN!!!!")
-            
 
     # def forward(self, x, context=None, size=None, cond_mask=None):
     #     forward_inputs = (x, context) if cond_mask is None else (x, context, size, cond_mask)
     #     return checkpoint(self._forward, forward_inputs, self.parameters(), self.checkpoint)
 
     def forward(self, x, context=None, size=None, cond_mask=None):
-        cond_mask = cond_mask if cond_mask is not None else torch.ones(x.shape[0], requires_grad=False).to(x.device).float()
+        cond_mask = cond_mask if cond_mask is not None else torch.ones(
+            x.shape[0], requires_grad=False
+        ).to(x.device).float()
         cond_mask = cond_mask.detach()
         h, w = size if size is not None else (x.shape[-2], x.shape[-1])
         x = rearrange(x, "b c h w -> b (h w) c")
@@ -682,6 +688,7 @@ class BasicSpatialTemporalTransformerBlock(nn.Module):
         # x = x.rearrange("b (h w) c -> b c h w", h=h, w=w)
         return x
 
+
 # modified following GenAD-private-genad_improved_yjz/sgm/modules/attention3d.py
 class SpatialTemporalTransformer(nn.Module):
     """
@@ -693,23 +700,23 @@ class SpatialTemporalTransformer(nn.Module):
     NEW: use_linear for more efficiency instead of the 1x1 convs
     """
     def __init__(
-            self, 
-            in_channels, 
-            n_heads, 
-            d_head,    
-            depth=1, 
-            dropout=0., 
-            context_dim=None,
-            disable_self_attn=False, 
-            use_linear=False,
-            attn_type="softmax",
-            use_checkpoint=True, 
-            num_frames=1,
-            concat_cond=False,
-            causal_temp=False,
-            assist_attn=False,
-            criss_cross=False
-            ):
+        self,
+        in_channels,
+        n_heads,
+        d_head,
+        depth=1,
+        dropout=0.,
+        context_dim=None,
+        disable_self_attn=False,
+        use_linear=False,
+        attn_type="softmax",
+        use_checkpoint=True,
+        num_frames=1,
+        concat_cond=False,
+        causal_temp=False,
+        assist_attn=False,
+        criss_cross=False
+    ):
         super().__init__()
         if exists(context_dim) and not isinstance(context_dim, list):
             context_dim = [context_dim]
@@ -717,11 +724,7 @@ class SpatialTemporalTransformer(nn.Module):
         inner_dim = n_heads * d_head
         self.norm = Normalize(in_channels)
         if not use_linear:
-            self.proj_in = nn.Conv2d(in_channels,
-                                     inner_dim,
-                                     kernel_size=1,
-                                     stride=1,
-                                     padding=0)
+            self.proj_in = nn.Conv2d(in_channels, inner_dim, kernel_size=1, stride=1, padding=0)
         else:
             self.proj_in = nn.Linear(in_channels, inner_dim)
 
@@ -741,8 +744,7 @@ class SpatialTemporalTransformer(nn.Module):
                     causal_temp=causal_temp,
                     assist_attn=assist_attn,
                     criss_cross=criss_cross
-                )
-                for d in range(depth)
+                ) for d in range(depth)
             ]
         )
         # self.transformer_blocks = nn.ModuleList(
@@ -751,11 +753,7 @@ class SpatialTemporalTransformer(nn.Module):
         #         for d in range(depth)]
         # )
         if not use_linear:
-            self.proj_out = zero_module(nn.Conv2d(inner_dim,
-                                                  in_channels,
-                                                  kernel_size=1,
-                                                  stride=1,
-                                                  padding=0))
+            self.proj_out = zero_module(nn.Conv2d(inner_dim, in_channels, kernel_size=1, stride=1, padding=0))
         else:
             self.proj_out = zero_module(nn.Linear(in_channels, inner_dim))
         self.use_linear = use_linear

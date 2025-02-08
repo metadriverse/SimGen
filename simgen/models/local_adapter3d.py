@@ -88,9 +88,7 @@ class LocalResBlock(nn.Module):
             nn.Identity(),
             nn.SiLU(),
             nn.Dropout(p=dropout),
-            zero_module(
-                conv_nd(dims, self.out_channels, self.out_channels, 3, padding=1)
-            ),
+            zero_module(conv_nd(dims, self.out_channels, self.out_channels, 3, padding=1)),
         )
 
         if self.out_channels == channels:
@@ -105,9 +103,7 @@ class LocalResBlock(nn.Module):
             self.temporal_module2 = SingleTemporalRelation(out_channels, dropout=dropout, num_frames=num_frames)
 
     def forward(self, x, emb, local_conditions):
-        return checkpoint(
-            self._forward, (x, emb, local_conditions), self.parameters(), self.use_checkpoint
-        )
+        return checkpoint(self._forward, (x, emb, local_conditions), self.parameters(), self.use_checkpoint)
 
     def _forward(self, x, emb, local_conditions):
         h = self.norm_in(x, local_conditions)
@@ -115,18 +111,18 @@ class LocalResBlock(nn.Module):
 
         if self.num_frames > 1:
             h = self.temporal_module1(h)
-        
+
         emb_out = self.emb_layers(emb).type(h.dtype)
         while len(emb_out.shape) < len(h.shape):
             emb_out = emb_out[..., None]
-        
+
         h = h + emb_out
         h = self.norm_out(h, local_conditions)
         h = self.out_layers(h)
 
         if self.num_frames > 1:
             h = self.temporal_module2(h)
-        
+
         return self.skip_connection(x) + h
 
 
@@ -145,35 +141,33 @@ class FeatureExtractor(nn.Module):
             conv_nd(dims, 128, 128, 3, padding=1),
             nn.SiLU(),
         )
-        self.extractors = nn.ModuleList([
-            LocalTimestepEmbedSequential(
-                conv_nd(dims, 128, inject_channels[0], 3, padding=1, stride=2),
-                nn.SiLU()
-            ),
-            LocalTimestepEmbedSequential(
-                conv_nd(dims, inject_channels[0], inject_channels[1], 3, padding=1, stride=2),
-                nn.SiLU()
-            ),
-            LocalTimestepEmbedSequential(
-                conv_nd(dims, inject_channels[1], inject_channels[2], 3, padding=1, stride=2),
-                nn.SiLU()
-            ),
-            LocalTimestepEmbedSequential(
-                conv_nd(dims, inject_channels[2], inject_channels[3], 3, padding=1, stride=2),
-                nn.SiLU()
-            )
-        ])
-        self.zero_convs = nn.ModuleList([
-            zero_module(conv_nd(dims, inject_channels[0], inject_channels[0], 3, padding=1)),
-            zero_module(conv_nd(dims, inject_channels[1], inject_channels[1], 3, padding=1)),
-            zero_module(conv_nd(dims, inject_channels[2], inject_channels[2], 3, padding=1)),
-            zero_module(conv_nd(dims, inject_channels[3], inject_channels[3], 3, padding=1))
-        ])
-    
+        self.extractors = nn.ModuleList(
+            [
+                LocalTimestepEmbedSequential(conv_nd(dims, 128, inject_channels[0], 3, padding=1, stride=2), nn.SiLU()),
+                LocalTimestepEmbedSequential(
+                    conv_nd(dims, inject_channels[0], inject_channels[1], 3, padding=1, stride=2), nn.SiLU()
+                ),
+                LocalTimestepEmbedSequential(
+                    conv_nd(dims, inject_channels[1], inject_channels[2], 3, padding=1, stride=2), nn.SiLU()
+                ),
+                LocalTimestepEmbedSequential(
+                    conv_nd(dims, inject_channels[2], inject_channels[3], 3, padding=1, stride=2), nn.SiLU()
+                )
+            ]
+        )
+        self.zero_convs = nn.ModuleList(
+            [
+                zero_module(conv_nd(dims, inject_channels[0], inject_channels[0], 3, padding=1)),
+                zero_module(conv_nd(dims, inject_channels[1], inject_channels[1], 3, padding=1)),
+                zero_module(conv_nd(dims, inject_channels[2], inject_channels[2], 3, padding=1)),
+                zero_module(conv_nd(dims, inject_channels[3], inject_channels[3], 3, padding=1))
+            ]
+        )
+
     def forward(self, local_conditions):
         local_features = self.pre_extractor(local_conditions, None)
         assert len(self.extractors) == len(self.zero_convs)
-        
+
         output_features = []
         for idx in range(len(self.extractors)):
             local_features = self.extractors[idx](local_features, None)
@@ -183,41 +177,41 @@ class FeatureExtractor(nn.Module):
 
 class LocalAdapter(nn.Module):
     def __init__(
-            self,
-            in_channels,
-            model_channels,
-            local_channels,
-            inject_channels,
-            inject_layers,
-            num_res_blocks,
-            attention_resolutions,
-            dropout=0,
-            channel_mult=(1, 2, 4, 8),
-            conv_resample=True,
-            dims=2,
-            use_checkpoint=False,
-            use_fp16=False,
-            num_heads=-1,
-            num_head_channels=-1,
-            num_heads_upsample=-1,
-            use_scale_shift_norm=False,
-            resblock_updown=False,
-            use_new_attention_order=False,
-            use_spatial_transformer=False,  # custom transformer support
-            transformer_depth=1,  # custom transformer support
-            context_dim=None,  # custom transformer support
-            n_embed=None,  # custom support for prediction of discrete ids into codebook of first stage vq model
-            legacy=True,
-            disable_self_attentions=None,
-            num_attention_blocks=None,
-            disable_middle_self_attn=False,
-            use_linear_in_transformer=False,
-            # from GenAD-private-genad_improved_yjz/sgm/modules/diffusionmodules/openaimodel3d.py
-            num_frames=1,
-            concat_cond=False,
-            causal_temp=False,
-            assist_attn=False,
-            criss_cross=False
+        self,
+        in_channels,
+        model_channels,
+        local_channels,
+        inject_channels,
+        inject_layers,
+        num_res_blocks,
+        attention_resolutions,
+        dropout=0,
+        channel_mult=(1, 2, 4, 8),
+        conv_resample=True,
+        dims=2,
+        use_checkpoint=False,
+        use_fp16=False,
+        num_heads=-1,
+        num_head_channels=-1,
+        num_heads_upsample=-1,
+        use_scale_shift_norm=False,
+        resblock_updown=False,
+        use_new_attention_order=False,
+        use_spatial_transformer=False,  # custom transformer support
+        transformer_depth=1,  # custom transformer support
+        context_dim=None,  # custom transformer support
+        n_embed=None,  # custom support for prediction of discrete ids into codebook of first stage vq model
+        legacy=True,
+        disable_self_attentions=None,
+        num_attention_blocks=None,
+        disable_middle_self_attn=False,
+        use_linear_in_transformer=False,
+        # from GenAD-private-genad_improved_yjz/sgm/modules/diffusionmodules/openaimodel3d.py
+        num_frames=1,
+        concat_cond=False,
+        causal_temp=False,
+        assist_attn=False,
+        criss_cross=False
     ):
         super().__init__()
         if use_spatial_transformer:
@@ -246,19 +240,25 @@ class LocalAdapter(nn.Module):
             self.num_res_blocks = len(channel_mult) * [num_res_blocks]
         else:
             if len(num_res_blocks) != len(channel_mult):
-                raise ValueError("provide num_res_blocks either as an int (globally constant) or "
-                                 "as a list/tuple (per-level) with the same length as channel_mult")
+                raise ValueError(
+                    "provide num_res_blocks either as an int (globally constant) or "
+                    "as a list/tuple (per-level) with the same length as channel_mult"
+                )
             self.num_res_blocks = num_res_blocks
         if disable_self_attentions is not None:
             # should be a list of booleans, indicating whether to disable self-attention in TransformerBlocks or not
             assert len(disable_self_attentions) == len(channel_mult)
         if num_attention_blocks is not None:
             assert len(num_attention_blocks) == len(self.num_res_blocks)
-            assert all(map(lambda i: self.num_res_blocks[i] >= num_attention_blocks[i], range(len(num_attention_blocks))))
-            print(f"Constructor of UNetModel received num_attention_blocks={num_attention_blocks}. "
-                  f"This option has LESS priority than attention_resolutions {attention_resolutions}, "
-                  f"i.e., in cases where num_attention_blocks[i] > 0 but 2**i not in attention_resolutions, "
-                  f"attention will still not be set.")
+            assert all(
+                map(lambda i: self.num_res_blocks[i] >= num_attention_blocks[i], range(len(num_attention_blocks)))
+            )
+            print(
+                f"Constructor of UNetModel received num_attention_blocks={num_attention_blocks}. "
+                f"This option has LESS priority than attention_resolutions {attention_resolutions}, "
+                f"i.e., in cases where num_attention_blocks[i] > 0 but 2**i not in attention_resolutions, "
+                f"attention will still not be set."
+            )
 
         self.attention_resolutions = attention_resolutions
         self.dropout = dropout
@@ -280,11 +280,7 @@ class LocalAdapter(nn.Module):
 
         self.feature_extractor = FeatureExtractor(local_channels, inject_channels)
         self.input_blocks = nn.ModuleList(
-            [
-                LocalTimestepEmbedSequential(
-                    conv_nd(dims, in_channels, model_channels, 3, padding=1)
-                )
-            ]
+            [LocalTimestepEmbedSequential(conv_nd(dims, in_channels, model_channels, 3, padding=1))]
         )
         self.zero_convs = nn.ModuleList([self.make_zero_conv(model_channels)])
 
@@ -294,7 +290,7 @@ class LocalAdapter(nn.Module):
         ds = 1
         for level, mult in enumerate(channel_mult):
             for nr in range(self.num_res_blocks[level]):
-                if (1 + 3*level + nr) in self.inject_layers:
+                if (1 + 3 * level + nr) in self.inject_layers:
                     layers = [
                         LocalResBlock(
                             ch,
@@ -342,16 +338,15 @@ class LocalAdapter(nn.Module):
                                 num_heads=num_heads,
                                 num_head_channels=dim_head,
                                 use_new_attention_order=use_new_attention_order,
-                            ) if not use_spatial_transformer else 
-                            SpatialTemporalTransformer(
-                                ch, 
-                                num_heads, 
-                                dim_head, 
-                                depth=transformer_depth, 
+                            ) if not use_spatial_transformer else SpatialTemporalTransformer(
+                                ch,
+                                num_heads,
+                                dim_head,
+                                depth=transformer_depth,
                                 context_dim=context_dim,
-                                disable_self_attn=disabled_sa, 
+                                disable_self_attn=disabled_sa,
                                 use_linear=use_linear_in_transformer,
-                                use_checkpoint=use_checkpoint, 
+                                use_checkpoint=use_checkpoint,
                                 num_frames=num_frames,
                                 concat_cond=concat_cond,
                                 causal_temp=causal_temp,
@@ -382,11 +377,7 @@ class LocalAdapter(nn.Module):
                             use_scale_shift_norm=use_scale_shift_norm,
                             down=True,
                             num_frames=num_frames
-                        )
-                        if resblock_updown
-                        else Downsample(
-                            ch, conv_resample, dims=dims, out_channels=out_ch
-                        )
+                        ) if resblock_updown else Downsample(ch, conv_resample, dims=dims, out_channels=out_ch)
                     )
                 )
                 ch = out_ch
@@ -418,16 +409,15 @@ class LocalAdapter(nn.Module):
                 num_heads=num_heads,
                 num_head_channels=dim_head,
                 use_new_attention_order=use_new_attention_order,
-            ) if not use_spatial_transformer else 
-            SpatialTemporalTransformer(
-                ch, 
-                num_heads, 
-                dim_head, 
-                depth=transformer_depth, 
+            ) if not use_spatial_transformer else SpatialTemporalTransformer(
+                ch,
+                num_heads,
+                dim_head,
+                depth=transformer_depth,
                 context_dim=context_dim,
-                disable_self_attn=disabled_sa, 
+                disable_self_attn=disabled_sa,
                 use_linear=use_linear_in_transformer,
-                use_checkpoint=use_checkpoint, 
+                use_checkpoint=use_checkpoint,
                 num_frames=num_frames,
                 concat_cond=concat_cond,
                 causal_temp=causal_temp,

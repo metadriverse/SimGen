@@ -21,6 +21,7 @@ from simgen import SimGenPipeline
 
 from argparse import ArgumentParser
 
+
 def postprocess_semantic_image(image):
     """
     In order to align with the Segformer's output, we modify the output color of the semantic image from MetaDrive.
@@ -40,16 +41,12 @@ def postprocess_semantic_image(image):
     assert image.dtype == np.uint8
 
     is_lane_line = (
-            (image[..., 0] == old_LANE_LINE[0]) &
-            (image[..., 1] == old_LANE_LINE[1]) &
-            (image[..., 2] == old_LANE_LINE[2])
+        (image[..., 0] == old_LANE_LINE[0]) & (image[..., 1] == old_LANE_LINE[1]) & (image[..., 2] == old_LANE_LINE[2])
     )
     image[is_lane_line] = new_LANE_LINE
 
     is_crosswalk = (
-            (image[..., 0] == old_CROSSWALK[0]) &
-            (image[..., 1] == old_CROSSWALK[1]) &
-            (image[..., 2] == old_CROSSWALK[2])
+        (image[..., 0] == old_CROSSWALK[0]) & (image[..., 1] == old_CROSSWALK[1]) & (image[..., 2] == old_CROSSWALK[2])
     )
     image[is_crosswalk] = new_CROSSWALK
 
@@ -73,10 +70,7 @@ def add_text(image, text_prompt):
     text_width = draw.textlength(text_prompt, font=font)
 
     # Make the text align in left bottom corner
-    position = (
-        50,
-        image.height - font_size - 50
-    )
+    position = (50, image.height - font_size - 50)
 
     # Draw the semi-transparent rectangle
     off = 15
@@ -169,14 +163,12 @@ if __name__ == "__main__":
 
     # define argument for precision, -p fp16 for fp16, -p fp32 for fp32, default is fp32
     parser = ArgumentParser()
-    parser.add_argument(
-        "-p", "--precision", type=str, default="fp32", help="Model precision, fp16 or fp32"
-    )
+    parser.add_argument("-p", "--precision", type=str, default="fp32", help="Model precision, fp16 or fp32")
 
     args = parser.parse_args()
 
     precision = args.precision
-    
+
     torch_dtype = torch.float16 if precision == "fp16" else torch.float32
 
     # ===== SimGen Setup =====
@@ -196,7 +188,6 @@ if __name__ == "__main__":
 
             # !!!!! To enable offscreen rendering, set this config to True !!!!!
             "image_observation": True,
-
             "norm_pixel": False,
             "stack_size": 1,
 
@@ -221,7 +212,6 @@ if __name__ == "__main__":
             # "use_bounding_box": True,
             "data_directory": AssetLoader.file_path("nuscenes", unix_style=False),
             "height_scale": 1,
-
             "set_static": True,
 
             # ===== Set some sensor and visualization configs =====
@@ -282,7 +272,7 @@ if __name__ == "__main__":
             )
         )
         horizon = scenario['length']
-        for t in tqdm.trange(horizon):
+        for t in tqdm.trange(horizon, desc="Step in Episode {}".format(ep)):
             o, r, d, _, _ = env.step([1, 0.88])
             if t % skip_steps == 0:
                 depth_img = Image.fromarray(o["depth"].repeat(3, axis=-1), mode="RGB")
@@ -324,7 +314,6 @@ if __name__ == "__main__":
 
         # Save mp4 video
         time_str = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-        mediapy.write_video(
-            'video_{}_seed-{}_{}.mp4'.format(scenario_id, seed, time_str), frames,
-            fps=fps
-        )
+        video_path = 'video_{}_seed-{}_{}.mp4'.format(scenario_id, seed, time_str)
+        mediapy.write_video(video_path, frames, fps=fps)
+        print("Video for episode {} saved to {}".format(ep, video_path))
