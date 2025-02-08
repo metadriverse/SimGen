@@ -157,8 +157,7 @@ def gen_kernel(k_size=np.array([15, 15]), scale_factor=np.array([4, 4]), min_var
 
     # Set COV matrix using Lambdas and Theta
     LAMBDA = np.diag([lambda_1, lambda_2])
-    Q = np.array([[np.cos(theta), -np.sin(theta)],
-                  [np.sin(theta), np.cos(theta)]])
+    Q = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
     SIGMA = Q @ LAMBDA @ Q.T
     INV_SIGMA = np.linalg.inv(SIGMA)[None, None, :, :]
 
@@ -366,6 +365,7 @@ def add_resize(img, sf=4):
 #     img = np.clip(img, 0.0, 1.0)
 #     return img
 
+
 def add_Gaussian_noise(img, noise_level1=2, noise_level2=25):
     noise_level = random.randint(noise_level1, noise_level2)
     rnum = np.random.rand()
@@ -378,7 +378,7 @@ def add_Gaussian_noise(img, noise_level1=2, noise_level2=25):
         D = np.diag(np.random.rand(3))
         U = orth(np.random.rand(3, 3))
         conv = np.dot(np.dot(np.transpose(U), D), U)
-        img = img + np.random.multivariate_normal([0, 0, 0], np.abs(L ** 2 * conv), img.shape[:2]).astype(np.float32)
+        img = img + np.random.multivariate_normal([0, 0, 0], np.abs(L**2 * conv), img.shape[:2]).astype(np.float32)
     img = np.clip(img, 0.0, 1.0)
     return img
 
@@ -396,14 +396,14 @@ def add_speckle_noise(img, noise_level1=2, noise_level2=25):
         D = np.diag(np.random.rand(3))
         U = orth(np.random.rand(3, 3))
         conv = np.dot(np.dot(np.transpose(U), D), U)
-        img += img * np.random.multivariate_normal([0, 0, 0], np.abs(L ** 2 * conv), img.shape[:2]).astype(np.float32)
+        img += img * np.random.multivariate_normal([0, 0, 0], np.abs(L**2 * conv), img.shape[:2]).astype(np.float32)
     img = np.clip(img, 0.0, 1.0)
     return img
 
 
 def add_Poisson_noise(img):
     img = np.clip((img * 255.0).round(), 0, 255) / 255.
-    vals = 10 ** (2 * random.random() + 2.0)  # [2, 4]
+    vals = 10**(2 * random.random() + 2.0)  # [2, 4]
     if random.random() < 0.5:
         img = np.random.poisson(img * vals).astype(np.float32) / vals
     else:
@@ -462,8 +462,9 @@ def degradation_bsrgan(img, sf=4, lq_patchsize=72, isp_model=None):
 
     if sf == 4 and random.random() < scale2_prob:  # downsample1
         if np.random.rand() < 0.5:
-            img = cv2.resize(img, (int(1 / 2 * img.shape[1]), int(1 / 2 * img.shape[0])),
-                             interpolation=random.choice([1, 2, 3]))
+            img = cv2.resize(
+                img, (int(1 / 2 * img.shape[1]), int(1 / 2 * img.shape[0])), interpolation=random.choice([1, 2, 3])
+            )
         else:
             img = util.imresize_np(img, 1 / 2, True)
         img = np.clip(img, 0.0, 1.0)
@@ -487,8 +488,10 @@ def degradation_bsrgan(img, sf=4, lq_patchsize=72, isp_model=None):
             # downsample2
             if random.random() < 0.75:
                 sf1 = random.uniform(1, 2 * sf)
-                img = cv2.resize(img, (int(1 / sf1 * img.shape[1]), int(1 / sf1 * img.shape[0])),
-                                 interpolation=random.choice([1, 2, 3]))
+                img = cv2.resize(
+                    img, (int(1 / sf1 * img.shape[1]), int(1 / sf1 * img.shape[0])),
+                    interpolation=random.choice([1, 2, 3])
+                )
             else:
                 k = fspecial('gaussian', 25, random.uniform(0.1, 0.6 * sf))
                 k_shifted = shift_pixel(k, sf)
@@ -551,8 +554,10 @@ def degradation_bsrgan_variant(image, sf=4, isp_model=None):
 
     if sf == 4 and random.random() < scale2_prob:  # downsample1
         if np.random.rand() < 0.5:
-            image = cv2.resize(image, (int(1 / 2 * image.shape[1]), int(1 / 2 * image.shape[0])),
-                               interpolation=random.choice([1, 2, 3]))
+            image = cv2.resize(
+                image, (int(1 / 2 * image.shape[1]), int(1 / 2 * image.shape[0])),
+                interpolation=random.choice([1, 2, 3])
+            )
         else:
             image = util.imresize_np(image, 1 / 2, True)
         image = np.clip(image, 0.0, 1.0)
@@ -576,8 +581,10 @@ def degradation_bsrgan_variant(image, sf=4, isp_model=None):
             # downsample2
             if random.random() < 0.75:
                 sf1 = random.uniform(1, 2 * sf)
-                image = cv2.resize(image, (int(1 / sf1 * image.shape[1]), int(1 / sf1 * image.shape[0])),
-                                   interpolation=random.choice([1, 2, 3]))
+                image = cv2.resize(
+                    image, (int(1 / sf1 * image.shape[1]), int(1 / sf1 * image.shape[0])),
+                    interpolation=random.choice([1, 2, 3])
+                )
             else:
                 k = fspecial('gaussian', 25, random.uniform(0.1, 0.6 * sf))
                 k_shifted = shift_pixel(k, sf)
@@ -609,7 +616,7 @@ def degradation_bsrgan_variant(image, sf=4, isp_model=None):
     # add final JPEG compression noise
     image = add_JPEG_noise(image)
     image = util.single2uint(image)
-    example = {"image":image}
+    example = {"image": image}
     return example
 
 
@@ -689,8 +696,9 @@ def degradation_bsrgan_plus(img, sf=4, shuffle_prob=0.5, use_sharp=True, lq_patc
             print('check the shuffle!')
 
     # resize to desired size
-    img = cv2.resize(img, (int(1 / sf * hq.shape[1]), int(1 / sf * hq.shape[0])),
-                     interpolation=random.choice([1, 2, 3]))
+    img = cv2.resize(
+        img, (int(1 / sf * hq.shape[1]), int(1 / sf * hq.shape[0])), interpolation=random.choice([1, 2, 3])
+    )
 
     # add final JPEG compression noise
     img = add_JPEG_noise(img)
@@ -702,29 +710,29 @@ def degradation_bsrgan_plus(img, sf=4, shuffle_prob=0.5, use_sharp=True, lq_patc
 
 
 if __name__ == '__main__':
-	print("hey")
-	img = util.imread_uint('utils/test.png', 3)
-	print(img)
-	img = util.uint2single(img)
-	print(img)
-	img = img[:448, :448]
-	h = img.shape[0] // 4
-	print("resizing to", h)
-	sf = 4
-	deg_fn = partial(degradation_bsrgan_variant, sf=sf)
-	for i in range(20):
-		print(i)
-		img_lq = deg_fn(img)
-		print(img_lq)
-		img_lq_bicubic = albumentations.SmallestMaxSize(max_size=h, interpolation=cv2.INTER_CUBIC)(image=img)["image"]
-		print(img_lq.shape)
-		print("bicubic", img_lq_bicubic.shape)
-		print(img_hq.shape)
-		lq_nearest = cv2.resize(util.single2uint(img_lq), (int(sf * img_lq.shape[1]), int(sf * img_lq.shape[0])),
-		                        interpolation=0)
-		lq_bicubic_nearest = cv2.resize(util.single2uint(img_lq_bicubic), (int(sf * img_lq.shape[1]), int(sf * img_lq.shape[0])),
-		                        interpolation=0)
-		img_concat = np.concatenate([lq_bicubic_nearest, lq_nearest, util.single2uint(img_hq)], axis=1)
-		util.imsave(img_concat, str(i) + '.png')
-
-
+    print("hey")
+    img = util.imread_uint('utils/test.png', 3)
+    print(img)
+    img = util.uint2single(img)
+    print(img)
+    img = img[:448, :448]
+    h = img.shape[0] // 4
+    print("resizing to", h)
+    sf = 4
+    deg_fn = partial(degradation_bsrgan_variant, sf=sf)
+    for i in range(20):
+        print(i)
+        img_lq = deg_fn(img)
+        print(img_lq)
+        img_lq_bicubic = albumentations.SmallestMaxSize(max_size=h, interpolation=cv2.INTER_CUBIC)(image=img)["image"]
+        print(img_lq.shape)
+        print("bicubic", img_lq_bicubic.shape)
+        print(img_hq.shape)
+        lq_nearest = cv2.resize(
+            util.single2uint(img_lq), (int(sf * img_lq.shape[1]), int(sf * img_lq.shape[0])), interpolation=0
+        )
+        lq_bicubic_nearest = cv2.resize(
+            util.single2uint(img_lq_bicubic), (int(sf * img_lq.shape[1]), int(sf * img_lq.shape[0])), interpolation=0
+        )
+        img_concat = np.concatenate([lq_bicubic_nearest, lq_nearest, util.single2uint(img_hq)], axis=1)
+        util.imsave(img_concat, str(i) + '.png')

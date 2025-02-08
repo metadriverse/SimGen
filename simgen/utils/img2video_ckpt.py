@@ -1,6 +1,6 @@
 import sys
 if './' not in sys.path:
-	sys.path.append('./')
+    sys.path.append('./')
 
 import torch
 
@@ -19,7 +19,7 @@ def init_local(sd_weights_path, config_path, output_path):
     #     if p.requires_grad:
     #         with open('tmp.txt', 'a') as f:
     #             f.write(n + '\n')
-            # print(n)
+    # print(n)
     # print(list(model.named_parameters()))
     # input()
     scratch_dict = model.state_dict()
@@ -30,13 +30,15 @@ def init_local(sd_weights_path, config_path, output_path):
         else:
             target_dict[sk] = scratch_dict[sk].clone()
         if sk.replace('BasicSpatialTemporalTransformerBlock.', 'BasicTransformerBlock.') in pretrained_weights.keys():
-            target_dict[sk] = pretrained_weights[sk.replace('BasicSpatialTemporalTransformerBlock.', 'BasicTransformerBlock.')].clone()
+            target_dict[sk] = pretrained_weights[
+                sk.replace('BasicSpatialTemporalTransformerBlock.', 'BasicTransformerBlock.')].clone()
         else:
             target_dict[sk] = scratch_dict[sk].clone()
             print('new params: {}'.format(sk))
     model.load_state_dict(target_dict, strict=True)
     torch.save(model.state_dict(), output_path)
     print('Done.')
+
 
 def init_global(sd_weights_path, config_path, output_path):
     pretrained_weights = torch.load(sd_weights_path)
@@ -54,6 +56,7 @@ def init_global(sd_weights_path, config_path, output_path):
     model.load_state_dict(target_dict, strict=True)
     torch.save(model.state_dict(), output_path)
     print('Done.')
+
 
 def integrate(local_weights, global_weights, config_path, output_path):
     local_weights = torch.load(local_weights)

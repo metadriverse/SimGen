@@ -5,6 +5,7 @@ from transformers import logging
 from simgen.ldm.modules.attention import default
 import simgen.ldm as ldm
 
+
 def disable_verbosity():
     logging.set_verbosity_error()
     print('logging improved.')
@@ -15,7 +16,6 @@ def enable_sliced_attention():
     ldm.modules.attention.CrossAttention.forward = _hacked_sliced_attentin_forward
     print('Enabled sliced_attention.')
     return
-
 
 
 def hack_everything(clip_skip=0):
@@ -43,7 +43,7 @@ def _hacked_clip_forward(self, text):
             return self.transformer(input_ids=t, output_hidden_states=False).last_hidden_state
 
     def split(x):
-        return x[75 * 0: 75 * 1], x[75 * 1: 75 * 2], x[75 * 2: 75 * 3]
+        return x[75 * 0:75 * 1], x[75 * 1:75 * 2], x[75 * 2:75 * 3]
 
     def pad(x, p, i):
         return x[:i] if len(x) >= i else x + [p] * (i - len(x))

@@ -29,4 +29,3 @@ setup(
         "Operating System :: OS Independent",
     ],
 )
-
