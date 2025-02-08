@@ -282,7 +282,7 @@ if __name__ == "__main__":
             )
         )
         horizon = scenario['length']
-        for t in tqdm.trange(horizon):
+        for t in tqdm.trange(horizon, desc="Step in Episode {}".format(ep)):
             o, r, d, _, _ = env.step([1, 0.88])
             if t % skip_steps == 0:
                 depth_img = Image.fromarray(o["depth"].repeat(3, axis=-1), mode="RGB")
@@ -324,7 +324,9 @@ if __name__ == "__main__":
 
         # Save mp4 video
         time_str = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+        video_path = 'video_{}_seed-{}_{}.mp4'.format(scenario_id, seed, time_str)
         mediapy.write_video(
-            'video_{}_seed-{}_{}.mp4'.format(scenario_id, seed, time_str), frames,
+            video_path, frames,
             fps=fps
         )
+        print("Video for episode {} saved to {}".format(ep, video_path))
