@@ -1,9 +1,3 @@
-# ignore pycache
-__pycache__/
+**/__pycache__/
 
-# ignore generated videos
-*.mp4
-
-# ignore .egg-info from setup tools
-*.egg-info
-
+ckpt/*

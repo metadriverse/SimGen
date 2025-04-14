@@ -1,146 +1,105 @@
-<div id="top" align="center">
+# SimGen
 
-# SimGen: Simulator-conditioned Driving Scene Generation
+A simple implementation of image generation with multiple conditions.
 
-**Revive driving scene simulation by simulator-conditioned generative models**
+## Environment Setup
 
-
-<a href="https://metadriverse.github.io/simgen/"><img src="https://img.shields.io/badge/Project-Page-orange"></a>
-<a href="https://arxiv.org/abs/2406.09386"><img src="https://img.shields.io/badge/arXiv-Paper-<color>"></a>
-<a href="README.md"><img alt="SimGen: v1.0" src="https://img.shields.io/badge/SimGen-v1.0-blueviolet"/></a>
-<a href="#license-and-citation"><img alt="License: Apache2.0" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg"/></a>
-
-![](./assets/teaser.png "Simulator-conditioned Driving Scene Generation")
-
-
-</div>
-
->
-> [Yunsong Zhou](https://zhouyunsong-sjtu.github.io/), Michael Simon, [Zhenghao Peng](https://pengzhenghao.github.io/), [Sicheng Mo](https://sichengmo.github.io/), Hongzi Zhu, Minyi Guo, and [Bolei Zhou](https://boleizhou.github.io/)
-> 
-> - Presented by [MetaDriverse](https://metadriverse.github.io/), [GenForce](https://genforce.github.io/), and Shanghai Jiao Tong University
-> - :mailbox_with_mail: Primary contact: [Yunsong Zhou]((https://zhouyunsong-sjtu.github.io/)) ( zhouyunsong2017@gmail.com ) 
-> - [arXiv paper](https://arxiv.org/abs/2406.09386) | [Blog TODO]() | [Slides](https://docs.google.com/presentation/d/1X1nB9umPlWtNfuUjZObO6UNyyBUbgHogVJA4bCaMiKQ/edit?usp=sharing)
-
-
-
-## Highlights <a name="highlights"></a>
-
-:fire: The first **simulator-conditioned generative model** for controllable driving scene generation with `appearance` and `layout` diversity. 
-
-:star2: **SimGen** addresses simulation to reality `(Sim2Real)` gaps via cascade diffusion paradigm, and follows layout guidance from simulators and cues of the rich text prompts to realistic driving scenarios.
-
-![method](./assets/overview.png "Architecture of SimGen")
-
-:bar_chart: **DIVA dataset** comprises 147.5 hours of `web videos` and `synthesized data` for diverse scene generation and advancing Sim2Real research.
-
-
-
-## News <a name="news"></a>
-
-
-- `[2024/06]` SimGem [paper](https://arxiv.org/abs/2406.09386) released.
-- `[2024/06]` DIVA dataset subset released.
-
-
-## Table of Contents
-
-1. [Highlights](#highlights)
-2. [News](#news)
-3. [TODO List](#todo)
-5. [DIVA Dataset](#dataset)
-7. [License and Citation](#license-and-citation)
-8. [Related Resources](#resources)
-
-## TODO List <a name="todo"></a>
-
-- [x] Release DIVA dataset
-- [x] Release SimGen code
-- [ ] Toolkits for novel scene generation
-
-## Quick Start
-### Installation
-You could install simgen package to enable simulator-conditioned generation.
 ```bash
-# You don't have to create new environment, the only requirement is python>=3.10.
-conda create -n simgen python=3.10
+conda create -n simgen python=3.8
 conda activate simgen
-
-# Install this package
-cd ~/SimGen
-pip install -e .
-
-# Test torch (expect True)
-python -c "import torch; print(torch.cuda.is_available())"
-
-# Install MetaDrive
-cd ~/
-git clone https://github.com/metadriverse/metadrive.git
-cd ~/metadrive
-pip install -e .
+pip install -r requirements.txt
 ```
-### Test SimGen
-After installation, you could run the following script to test simgen pipeline. Model checkpoint will automatically be
-downloaded from **huggingface**:[SichengMo-UCLA/SimGen](https://huggingface.co/SichengMo-UCLA/SimGen).
+
+## Data Preparation
+
+The demo data is already included in the repository under `example_data/` directory. The data structure is:
+
+```
+example_data/
+├── real_img/          # Target images
+├── depth/             # Depth images
+├── seg/               # Segmentation images
+└── text_label.json    # Text descriptions for each image
+```
+
+## Model Weights
+
+1. Download the pre-trained weights:
 ```bash
-python test/test.py
+wget https://huggingface.co/stabilityai/stable-diffusion-2-1-base/resolve/main/v2-1_512-ema-pruned.ckpt
 ```
 
-### Run SimGen with Metadrive
-You can use simgen with metadrive by running the following script. 
-The script will generate synthetic driving videos with the help of metadrive simulator and save
-the video to the repository root directory for each episode.
-
+2. Prepare the model weights:
 ```bash
-python metadrive_simgen.py
+bash prepare_weights.sh
 ```
 
-Flag for half-precision / float16 inference:
+## Training
+
+The training process consists of three stages:
+
+1. Train ImgDiff (Image Generation):
 ```bash
-python metadrive_simgen.py -p fp16
-```
-Otherwise, default setting will be float32.
-
-## DIVA Dataset <a name="dataset"></a>
-
-![method](./assets/diva_real.png "DIVA dataset")
-
-
-**DIVA-Real.** 
-It collects driving videos from YouTube, covering a worldwide range of geography, weather, scenes, and traffic elements and preserving the appearance diversity of a wide range of traffic participants. Here we provide a sample of 🔗 [YouTube video list](https://docs.google.com/spreadsheets/d/1lKfd0iARpJl-5K37XSXRwiZIWi1LrTvL/edit?usp=sharing&ouid=102597623866661259117&rtpof=true&sd=true) we used.
-For privacy considerations, we are temporarily keeping the complete data labels private.
-
-![method](./assets/diva_sim.gif "DIVA_dataset")
-
-
-**DIVA-Sim.** 
-The Sim2Real data is induced from the same real-world scenarios, in which we can obtain real-world map topology, layout, and raw sensor data.
-It also includes hazardous driving behaviors through interactions introduced by adversarial traffic generation.
-The digital twins (on nuScenes dataset) and safety-critical scenarios (on Waymo Open dataset) can be obtained through this 🔗[data link](https://drive.google.com/drive/folders/1K7NrujRlfyI6VrH6Kd9kTHCeKnpl4bab?usp=sharing). 
-
-
-
-## License and Citation
-
-All assets and code in this repository are under the [Apache 2.0 license](./LICENSE) unless specified otherwise. The annotation data is under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). Other datasets (including nuScenes, Waymo, and MetaDrive) inherit their own distribution licenses. Please consider citing our paper and project if they help your research.
-
-```BibTeX
-@article{zhou2024simgen,
-  title={SimGen: Simulator-conditioned Driving Scene Generation},
-  author={Zhou, Yunsong and Simon, Michael and Peng, Zhenghao and Mo, Sicheng and Zhu, Hongzi and Guo, Minyi and Zhou, Bolei},
-  journal={arXiv preprint arXiv:2406.09386},
-  year={2024}
-}
+bash train.sh
 ```
 
-## Related Resources <a name="resources"></a>
+2. Train CondDiff (Condition Generation):
+```bash
+bash train_t2i.sh
+```
 
-We acknowledge all the open-source contributors for the following projects to make this work possible:
+3. Train Full SimGen (Cascade):
+   - First, train CondDiff using step 2
+   - Then, update the checkpoint path in `configs/cascade_v21_sn.yaml`
+   - Finally, run:
+```bash
+bash train_cas.sh
+```
 
-- [Uni-ControlNet](https://github.com/ShihaoZhaoZSH/Uni-ControlNet) | [MetaDrive](https://github.com/metadriverse/metadrive)
+## Evaluation
 
-You are welcome to follow other related work from <a href="https://twitter.com/Yunsong_Zhou" target="_blank"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/Yunsong?style=social&color=brightgreen&logo=twitter" /></a>, [MetaDriverse](https://metadriverse.github.io/), and [GenForce](https://genforce.github.io/).
+1. Visualize Results:
+   - Use `web_page.py` for visualizing with conditions:
+```bash
+python web_page.py --image-folder <output_dir> --condition-num <num_conditions>
+```
+   - Use `web.py` for visualizing without conditions:
+```bash
+python web.py --image-folder <output_dir>
+```
 
-- [ELM](https://github.com/OpenDriveLab/ELM) | [OpenScene](https://github.com/OpenDriveLab/OpenScene) | [DriveAGI](https://github.com/OpenDriveLab/DriveAGI)
-- [ScenarioNet](https://github.com/metadriverse/scenarionet) | [CAT](https://github.com/metadriverse/cat) | [FreeControl](https://github.com/genforce/freecontrol)
+2. Calculate Metrics:
+   - Pixel Diversity:
+```bash
+python pixel_diversity.py --image-folder <output_dir>
+```
+   - FID Score (using [pytorch-fid](https://github.com/mseitzer/pytorch-fid)):
+```bash
+pip install pytorch-fid
+python -m pytorch_fid <real_images_dir> <generated_images_dir>
+```
 
+## Directory Structure
+
+```
+.
+├── configs/           # Configuration files
+├── ckpts/            # Model checkpoints
+├── example_data/     # Demo data
+├── output/           # Training outputs
+├── src/              # Source code
+│   ├── train/        # Training code
+│   └── test/         # Testing code
+└── utils/            # Utility scripts
+```
+
+## Configuration
+
+The main configuration files are:
+- `configs/local_v21_sn.yaml`: Local condition model (ImgDiff)
+- `configs/t2i_v21_v.yaml`: Text-to-image model (CondDiff)
+- `configs/cascade_v21_sn.yaml`: Cascade model (Full SimGen)
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

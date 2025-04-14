@@ -1,0 +1,1 @@
+python utils/prepare_weights.py init_local <sd_ckpt_path> ./configs/local_v21_sn.yaml <output_ckpt_path>
